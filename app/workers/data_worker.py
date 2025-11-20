@@ -23,9 +23,7 @@ class DataWorker:
         results = {}
         for region, group in df.groupby("Region"):
             try:
-                corr = group["Marketing_Spend_USD"].corr(
-                    group["Net_Revenue_USD"]
-                )
+                corr = group["Marketing_Spend_USD"].corr(group["Net_Revenue_USD"])
                 results[region] = corr
             except Exception as e:
                 logger.error(f"Correlation failed for region {region}: {e}")

@@ -22,9 +22,7 @@ def test_extract_question_and_resources(orchestrator):
         question,
         csv_url,
         submit_url,
-    ) = orchestrator.extract_question_and_resources(
-        html, "http://example.com"
-    )
+    ) = orchestrator.extract_question_and_resources(html, "http://example.com")
     assert question == "What is the capital of France? Download CSV Submit"
     assert csv_url == "http://example.com/data.csv"
     assert submit_url == "http://example.com/submit"
@@ -32,13 +30,11 @@ def test_extract_question_and_resources(orchestrator):
 
 @pytest.mark.asyncio
 async def test_handle_task_successful(orchestrator):
-    with patch(
-        "app.orchestrator.render_page_with_retries"
-    ) as mock_render, patch(
-        "app.orchestrator.DataAgent.run"
-    ) as mock_run, patch(
-        "app.orchestrator.submit_answer"
-    ) as mock_submit:
+    with (
+        patch("app.orchestrator.render_page_with_retries") as mock_render,
+        patch("app.orchestrator.DataAgent.run") as mock_run,
+        patch("app.orchestrator.submit_answer") as mock_submit,
+    ):
         mock_render.return_value = """
         <html>
             <body>

@@ -78,9 +78,7 @@ class Orchestrator:
 
         return question_text, csv_url, submit_url
 
-    def _normalize_resource_url(
-        self, href: str, page_url: str
-    ) -> Optional[str]:
+    def _normalize_resource_url(self, href: str, page_url: str) -> Optional[str]:
         if not href:
             return None
         absolute = urljoin(page_url, href)
@@ -95,9 +93,7 @@ class Orchestrator:
         if not raw_url:
             return raw_url
 
-        match = re.match(
-            r"https://drive\.google\.com/file/d/([^/]+)/", raw_url
-        )
+        match = re.match(r"https://drive\.google\.com/file/d/([^/]+)/", raw_url)
         if match:
             file_id = match.group(1)
             return f"https://drive.google.com/uc?export=download&id={file_id}"
@@ -109,11 +105,7 @@ class Orchestrator:
             return False
 
         lower_url = url.lower()
-        if (
-            lower_url.endswith(".csv")
-            or ".csv?" in lower_url
-            or ".csv#" in lower_url
-        ):
+        if lower_url.endswith(".csv") or ".csv?" in lower_url or ".csv#" in lower_url:
             return True
 
         if "csv" in (anchor_text or "").lower():
@@ -196,8 +188,7 @@ class Orchestrator:
                     return {"error": "agent_failed", "details": answer}
 
                 logger.info(
-                    f"[Orchestrator] Computed answer (attempt "
-                    f"{attempt_num}): {answer}"
+                    f"[Orchestrator] Computed answer (attempt {attempt_num}): {answer}"
                 )
 
                 payload = {
@@ -219,9 +210,7 @@ class Orchestrator:
                     continue
 
                 final_submit_response = submit_response
-                logger.info(
-                    f"[Orchestrator] Submit response: {submit_response}"
-                )
+                logger.info(f"[Orchestrator] Submit response: {submit_response}")
 
                 correct = submit_response.get("correct", False)
                 next_url = submit_response.get("url")
@@ -253,8 +242,7 @@ class Orchestrator:
             # Not correct after retries
             if next_url:
                 logger.info(
-                    "Server advanced to next URL despite incorrect "
-                    f"answers: {next_url}"
+                    f"Server advanced to next URL despite incorrect answers: {next_url}"
                 )
                 current_url = next_url
                 continue

@@ -19,9 +19,7 @@ def mock_load_csv_tool():
 @pytest.mark.asyncio
 async def test_data_agent_run_no_csv_url():
     agent = DataAgent()
-    result = await agent.run(
-        question="What is the capital of France?", csv_url=None
-    )
+    result = await agent.run(question="What is the capital of France?", csv_url=None)
     assert result == {"error": "csv_url missing"}
 
 
@@ -40,9 +38,7 @@ async def test_data_agent_run_csv_load_failed(mock_load_csv_tool):
 
 
 @pytest.mark.asyncio
-async def test_data_agent_run_successful(
-    mock_load_csv_tool, mock_chat_completion
-):
+async def test_data_agent_run_successful(mock_load_csv_tool, mock_chat_completion):
     agent = DataAgent()
     mock_df = pd.DataFrame({"col1": [1, 2], "col2": [3, 4]})
     mock_load_csv_tool.return_value = mock_df

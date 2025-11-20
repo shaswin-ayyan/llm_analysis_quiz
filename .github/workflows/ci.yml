@@ -14,7 +14,7 @@ jobs:
           pip install -r requirements.txt
           pip install -r requirements-dev.txt
       - name: Run linter
-        run: flake8 .
+        run: ruff check .
   security:
     runs-on: ubuntu-latest
     steps:

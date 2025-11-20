@@ -29,9 +29,7 @@ ALL_PROVIDERS = [AIPIPE_PROVIDER]
 # ***************************************************************
 # MAIN COMPLETION FUNCTION WITH FULL SEMANTIC FAILOVER
 # ***************************************************************
-async def chat_completion(
-    messages, provider_index=0, model_index=0, timeout=20
-):
+async def chat_completion(messages, provider_index=0, model_index=0, timeout=20):
     """
     provider_index: which provider to use
     model_index: which model inside the provider to use (for OpenRouter)
@@ -48,9 +46,7 @@ async def chat_completion(
     models = [m for m in models if m]
 
     if not models:
-        raise RuntimeError(
-            f"No models configured for provider {provider['name']}"
-        )
+        raise RuntimeError(f"No models configured for provider {provider['name']}")
 
     if model_index >= len(models):
         return await chat_completion(messages, provider_index + 1, 0, timeout)
@@ -63,9 +59,7 @@ async def chat_completion(
     if provider["type"] == "aipipe":
         if not provider["api_key"]:
             print("[AIPipe] No API key — skipping")
-            return await chat_completion(
-                messages, provider_index + 1, 0, timeout
-            )
+            return await chat_completion(messages, provider_index + 1, 0, timeout)
 
         headers = {
             "Authorization": f"Bearer {provider['api_key']}",
@@ -76,9 +70,7 @@ async def chat_completion(
 
         try:
             async with httpx.AsyncClient(timeout=timeout) as client:
-                resp = await client.post(
-                    provider["url"], headers=headers, json=payload
-                )
+                resp = await client.post(provider["url"], headers=headers, json=payload)
         except Exception as e:
             print(f"[AIPipe EXCEPTION] {model} → {e}")
             return await chat_completion(
@@ -86,10 +78,7 @@ async def chat_completion(
             )
 
         if resp.status_code != 200:
-            print(
-                f"[AIPipe ERROR] {model} → {resp.status_code} "
-                f"{resp.text[:200]}"
-            )
+            print(f"[AIPipe ERROR] {model} → {resp.status_code} {resp.text[:200]}")
             return await chat_completion(
                 messages, provider_index, model_index + 1, timeout
             )

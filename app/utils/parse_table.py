@@ -42,8 +42,7 @@ def html_table_to_df(table_html: str) -> pd.DataFrame:
         return pd.DataFrame()
     # treat first row as header if it has ths
     header_candidates = [
-        th.get_text(strip=True)
-        for th in table.find_all("tr")[0].find_all("th")
+        th.get_text(strip=True) for th in table.find_all("tr")[0].find_all("th")
     ]
     if header_candidates:
         header = header_candidates
@@ -83,9 +82,7 @@ def _infer_type(val: str):
 def normalize_dataframe(df: pd.DataFrame) -> pd.DataFrame:
     df2 = df.copy()
     for col in df2.columns:
-        df2[col] = df2[col].astype(str).map(
-            lambda x: x.strip() if x is not None else x
-        )
+        df2[col] = df2[col].astype(str).map(lambda x: x.strip() if x is not None else x)
         # infer types
         df2[col] = df2[col].map(lambda v: _infer_type(v))
     return df2
