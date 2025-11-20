@@ -1,8 +1,11 @@
 import logging
 from playwright.async_api import async_playwright, Error as PlaywrightError
-from tenacity import retry, stop_after_attempt, wait_exponential, retry_if_exception_type
-
-logger = logging.getLogger("uvicorn.error")
+from tenacity import (
+    retry,
+    stop_after_attempt,
+    wait_exponential,
+    retry_if_exception_type,
+)
 
 logger = logging.getLogger("uvicorn.error")
 
@@ -17,15 +20,22 @@ async def render_page_with_retries(url: str, timeout: int = 30) -> str:
     try:
         async with async_playwright() as p:
             logger.info("Launching browser...")
-            browser = await p.chromium.launch(args=["--no-sandbox", "--disable-dev-shm-usage"], headless=True)
+            browser = await p.chromium.launch(
+                args=["--no-sandbox", "--disable-dev-shm-usage"],
+                headless=True,
+            )
             page = await browser.new_page()
             logger.info(f"Navigating to {url}...")
-            await page.goto(url, wait_until='networkidle', timeout=timeout*1000)
+            await page.goto(
+                url, wait_until="networkidle", timeout=timeout * 1000
+            )
             logger.info("Page loaded successfully.")
             content = await page.content()
             await browser.close()
             logger.info("Browser closed.")
             return content
     except Exception as e:
-        logger.exception(f"An error occurred while rendering the page: {e}")
-        raise
+        logger.exception(
+            f"An error occurred while rendering the page: {e}"
+        )
+        raise e
