@@ -45,7 +45,11 @@ def serialize_result(res: Any, max_rows: int = 3):
     try:
         if hasattr(res, "columns") and hasattr(res, "head"):
             preview_df = res.head(max_rows)
-            preview = preview_df.to_dict(orient="records") if hasattr(preview_df, "to_dict") else []
+            preview = (
+                preview_df.to_dict(orient="records")
+                if hasattr(preview_df, "to_dict")
+                else []
+            )
             return {
                 "type": "dataframe",
                 "columns": list(res.columns),
@@ -77,7 +81,11 @@ def build_dataset_profile(df, max_rows: int = 3):
 
     try:
         preview_df = df.head(max_rows)
-        preview = preview_df.to_dict(orient="records") if hasattr(preview_df, "to_dict") else []
+        preview = (
+            preview_df.to_dict(orient="records")
+            if hasattr(preview_df, "to_dict")
+            else []
+        )
         return {
             "columns": list(df.columns),
             "row_count": int(len(df)),
@@ -99,7 +107,6 @@ def format_tool_outputs_for_prompt(tool_outputs: List[dict]) -> str:
     except Exception:
         raw = str(tool_outputs)
     return truncate_text(raw, 2500)
-
 
 
 # ============================================================
@@ -130,41 +137,45 @@ COLUMN_ARG_NAMES = {
 }
 
 
-
 # ============================================================
 # PROMPTS (FULLY ESCAPED)
 # ============================================================
 
 BASE_PROMPT = (
     "SYSTEM: You are an analytical, tool-using data scientist. "
-    "You MUST output ONLY a JSON LIST. The LAST element MUST be a final answer "
-    "as {{\"final_answer\": \"<value>\"}}.\n\n"
-
+    "You MUST output ONLY a JSON LIST. The LAST element MUST be a final "
+    "answer as {{\"final_answer\": \"<value>\"}}.\n\n"
     "DATASET SNAPSHOT:\n"
     "{data_profile}\n\n"
-    "Detected columns (use EXACT spellings or inspect dataframe head): {allowed_columns}\n\n"
-
+    "Detected columns (use EXACT spellings or inspect dataframe head): "
+    "{allowed_columns}\n\n"
     "TOOL SCHEMA:\n"
     "  {{\"action\": \"load_csv\", \"args\": {{\"path\": \"<csv_url>\"}}}},\n"
-    "  {{\"action\": \"correlation\", \"args\": {{\"column_x\": \"<col>\", \"column_y\": \"<col>\", \"group_by\": \"<optional>\"}}}},\n"
-    "  {{\"action\": \"summary_stats\", \"args\": {{\"column\": \"<optional>\", \"group_by\": \"<optional>\"}}}},\n"
-    "  {{\"action\": \"top_group_by\", \"args\": {{\"group_by\": \"<col>\", \"value_col\": \"<col>\", \"n\": <int>}}}},\n"
-    "  {{\"action\": \"filter\", \"args\": {{\"column\": \"<col>\", \"op\": \"<op>\", \"value\": <val>}}}},\n\n"
-
+    "  {{\"action\": \"correlation\", \"args\": {{\"column_x\": \"<col>\", "
+    "\"column_y\": \"<col>\", \"group_by\": \"<optional>\"}}}},\n"
+    "  {{\"action\": \"summary_stats\", \"args\": {{\"column\": "
+    "\"<optional>\", \"group_by\": \"<optional>\"}}}},\n"
+    "  {{\"action\": \"top_group_by\", \"args\": {{\"group_by\": \"<col>\", "
+    "\"value_col\": \"<col>\", \"n\": <int>}}}},\n"
+    "  {{\"action\": \"filter\", \"args\": {{\"column\": \"<col>\", \"op\": "
+    "\"<op>\", \"value\": <val>}}}},\n\n"
     "RULES:\n"
-    "- Carefully read the question and plan each tool call before answering.\n"
+    "- Carefully read the question and plan each tool call before "
+    "answering.\n"
     "- ALWAYS inspect the loaded dataframe before running aggregations.\n"
-    "- Cross-check calculations (e.g., recompute statistics or validate units) when possible.\n"
-    "- NEVER invent column names or statistics; reference only actual dataframe columns.\n"
-    "- NEVER output plain text; ALWAYS output JSON per schema and end with final_answer.\n\n"
-
+    "- Cross-check calculations (e.g., recompute statistics or validate "
+    "units) when possible.\n"
+    "- NEVER invent column names or statistics; reference only actual "
+    "dataframe columns.\n"
+    "- NEVER output plain text; ALWAYS output JSON per schema and end with "
+    "final_answer.\n\n"
     "EXAMPLE STRUCTURE:\n"
     "[\n"
     "  {{\"action\": \"load_csv\", \"args\": {{\"path\": \"<csv_url>\"}}}},\n"
-    "  {{\"action\": \"summary_stats\", \"args\": {{\"column\": \"<column_name>\"}}}},\n"
+    "  {{\"action\": \"summary_stats\", \"args\": {{\"column\": "
+    "\"<column_name>\"}}}},\n"
     "  {{\"final_answer\": \"<result>\"}}\n"
     "]\n\n"
-
     "USER: {user_payload}\n"
 )
 
@@ -186,7 +197,8 @@ REPAIR_INVALID_COLUMNS_PROMPT = (
 )
 
 REPAIR_ADD_FINAL_PROMPT = (
-    "The previous tool plan executed but DID NOT include a final_answer.\n"
+    "The previous tool plan executed but DID NOT include a "
+    "final_answer.\n"
     "Executed tool outputs:\n"
     "{tool_outputs}\n\n"
     "Append a final step {{\"final_answer\": \"<value>\"}}.\n"
@@ -195,16 +207,17 @@ REPAIR_ADD_FINAL_PROMPT = (
 )
 
 VERIFIER_SYSTEM_PROMPT = (
-    "You verify analytical answers using structured data. Respond ONLY with JSON."
+    "You verify analytical answers using structured data. Respond ONLY with "
+    "JSON."
 )
 
 VERIFICATION_PROMPT = (
     "Question:\n{question}\n\n"
     "Proposed final answer: {final_answer}\n\n"
     "Tool outputs (JSON):\n{tool_outputs}\n\n"
-    "Return JSON with keys final_answer, confidence (high|medium|low), reason."
+    "Return JSON with keys final_answer, confidence (high|medium|low), "
+    "reason."
 )
-
 
 
 # ============================================================
@@ -212,7 +225,6 @@ VERIFICATION_PROMPT = (
 # ============================================================
 
 class DataAgent:
-
     def __init__(self):
         pass
 
@@ -240,7 +252,9 @@ class DataAgent:
         return attempts
 
     @staticmethod
-    def _normalize_and_validate_plan_columns(plan, allowed_columns: List[str]):
+    def _normalize_and_validate_plan_columns(
+        plan, allowed_columns: List[str]
+    ):
         allowed_map = {c.lower(): c for c in allowed_columns}
         invalid = []
 
@@ -258,11 +272,13 @@ class DataAgent:
                 if normalized:
                     args[arg_name] = normalized
                 else:
-                    invalid.append({
-                        "action": action,
-                        "arg": arg_name,
-                        "value": val
-                    })
+                    invalid.append(
+                        {
+                            "action": action,
+                            "arg": arg_name,
+                            "value": val,
+                        }
+                    )
         return invalid, plan
 
     async def run(
@@ -273,7 +289,6 @@ class DataAgent:
         attempt_number: int = 1,
         prior_feedback: Optional[str] = None,
     ):
-
         if not csv_url:
             return {"error": "csv_url missing"}
 
@@ -282,32 +297,42 @@ class DataAgent:
             try:
                 cached_df = await load_csv_tool({"path": csv_url}, None)
             except Exception as exc:
-                logger.error(f"[DataAgent] Failed to load CSV {csv_url}: {exc}")
+                logger.error(
+                    f"[DataAgent] Failed to load CSV {csv_url}: {exc}"
+                )
                 return {"error": "csv_load_failed", "details": str(exc)}
 
         dataset_profile = build_dataset_profile(cached_df)
         allowed_columns = dataset_profile.get("columns", [])
-        allowed_columns_text = ", ".join(allowed_columns) if allowed_columns else "Not detected"
-        data_profile_str = json.dumps(dataset_profile, ensure_ascii=False, default=str)
+        allowed_columns_text = (
+            ", ".join(allowed_columns) if allowed_columns else "Not detected"
+        )
+        data_profile_str = json.dumps(
+            dataset_profile, ensure_ascii=False, default=str
+        )
 
         context_lines = [
             "Return ONLY tool JSON per schema.",
-            f"This is attempt #{attempt_number}. You must maximize accuracy.",
-            "Double-check calculations before producing final_answer."
+            f"This is attempt #{attempt_number}. You must maximize "
+            "accuracy.",
+            "Double-check calculations before producing final_answer.",
         ]
         if prior_feedback:
             context_lines.append(f"Server feedback: {prior_feedback}")
 
-        user_payload = json.dumps({
-            "question": question,
-            "csv_url": csv_url,
-            "context": " ".join(context_lines)
-        }, ensure_ascii=False)
+        user_payload = json.dumps(
+            {
+                "question": question,
+                "csv_url": csv_url,
+                "context": " ".join(context_lines),
+            },
+            ensure_ascii=False,
+        )
 
         base_prompt = BASE_PROMPT.format(
             user_payload=user_payload,
             allowed_columns=allowed_columns_text,
-            data_profile=data_profile_str
+            data_profile=data_profile_str,
         )
 
         model_attempts = self._model_attempts()
@@ -315,26 +340,32 @@ class DataAgent:
             return {"error": "No LLM providers configured."}
 
         def resolve_csv_target(arg_dict):
-            for key in ("path", "file_path", "url", "dataset", "file", "csv_path"):
+            for key in (
+                "path",
+                "file_path",
+                "url",
+                "dataset",
+                "file",
+                "csv_path",
+            ):
                 val = arg_dict.get(key)
                 if isinstance(val, str) and val.strip():
                     return val.strip()
             return None
 
-        # Outer loop: walk across providers/models via chat_completion(provider_index)
-        for attempt_idx, (provider_idx, model_idx) in enumerate(model_attempts):
-
+        # Outer loop: walk across providers/models
+        for attempt_idx, (p_idx, m_idx) in enumerate(model_attempts):
             # === 1. ASK MODEL FOR INITIAL PLAN ===
             try:
                 llm_resp = await chat_completion(
                     [{"role": "system", "content": base_prompt}],
-                    provider_index=provider_idx,
-                    model_index=model_idx
+                    provider_index=p_idx,
+                    model_index=m_idx,
                 )
             except Exception as e:
                 logger.warning(
                     f"[DataAgent] LLM failed @ attempt {attempt_idx} "
-                    f"(provider={provider_idx}, model={model_idx}): {e}"
+                    f"(provider={p_idx}, model={m_idx}): {e}"
                 )
                 continue
 
@@ -349,16 +380,16 @@ class DataAgent:
                 for r_try in range(3):
                     repair_prompt = REPAIR_INVALID_JSON_PROMPT.format(
                         bad_output=clean_text,
-                        allowed_columns=allowed_columns_text
+                        allowed_columns=allowed_columns_text,
                     )
                     try:
                         rep = await chat_completion(
                             [
                                 {"role": "system", "content": base_prompt},
-                                {"role": "user",   "content": repair_prompt}
+                                {"role": "user", "content": repair_prompt},
                             ],
-                            provider_index=provider_idx,
-                            model_index=model_idx
+                            provider_index=p_idx,
+                            model_index=m_idx,
                         )
                     except Exception:
                         continue
@@ -391,16 +422,16 @@ class DataAgent:
                 # ask to repair plan shape
                 repair_prompt = REPAIR_INVALID_JSON_PROMPT.format(
                     bad_output=json.dumps(plan),
-                    allowed_columns=allowed_columns_text
+                    allowed_columns=allowed_columns_text,
                 )
                 try:
                     rep = await chat_completion(
                         [
                             {"role": "system", "content": base_prompt},
-                            {"role": "user", "content": repair_prompt}
+                            {"role": "user", "content": repair_prompt},
                         ],
-                        provider_index=provider_idx,
-                        model_index=model_idx
+                        provider_index=p_idx,
+                        model_index=m_idx,
                     )
                     rep_clean = extract_json(rep)
                     plan2, err2 = safe_json_load(rep_clean)
@@ -412,24 +443,31 @@ class DataAgent:
 
             # Column validation / normalization
             if allowed_columns:
-                invalid_columns, plan = self._normalize_and_validate_plan_columns(plan, allowed_columns)
+                (
+                    invalid_columns,
+                    plan,
+                ) = self._normalize_and_validate_plan_columns(
+                    plan, allowed_columns
+                )
             else:
                 invalid_columns = []
 
             if invalid_columns:
-                invalid_json = json.dumps(invalid_columns, ensure_ascii=False)
+                invalid_json = json.dumps(
+                    invalid_columns, ensure_ascii=False
+                )
                 repair_prompt = REPAIR_INVALID_COLUMNS_PROMPT.format(
                     invalid_columns=invalid_json,
-                    allowed_columns=allowed_columns_text
+                    allowed_columns=allowed_columns_text,
                 )
                 try:
                     rep = await chat_completion(
                         [
                             {"role": "system", "content": base_prompt},
-                            {"role": "user", "content": repair_prompt}
+                            {"role": "user", "content": repair_prompt},
                         ],
-                        provider_index=provider_idx,
-                        model_index=model_idx
+                        provider_index=p_idx,
+                        model_index=m_idx,
                     )
                 except Exception:
                     continue
@@ -443,19 +481,25 @@ class DataAgent:
                 plan = plan2
 
                 if allowed_columns:
-                    invalid_columns, plan = self._normalize_and_validate_plan_columns(plan, allowed_columns)
+                    (
+                        invalid_columns,
+                        plan,
+                    ) = self._normalize_and_validate_plan_columns(
+                        plan, allowed_columns
+                    )
                     if invalid_columns:
-                        logger.warning(f"[DataAgent] Plan still has invalid columns: {invalid_columns}")
+                        logger.warning(
+                            "[DataAgent] Plan still has invalid "
+                            f"columns: {invalid_columns}"
+                        )
                         continue
 
             # === 3. EXECUTE PLAN ===
-            last_result = None
             tool_outputs = []
             tool_failed = False
             current_df = cached_df
 
             for st in plan:
-
                 # Already final?
                 if "final_answer" in st:
                     return st["final_answer"]
@@ -477,27 +521,38 @@ class DataAgent:
                 try:
                     if action == "load_csv":
                         target_path = resolve_csv_target(args) or csv_url
-                        if isinstance(target_path, str) and "<csv_url>" in target_path.lower():
+                        if (
+                            isinstance(target_path, str)
+                            and "<csv_url>" in target_path.lower()
+                        ):
                             target_path = csv_url
                         if target_path == csv_url and cached_df is not None:
                             result = cached_df
                         else:
-                            result = await load_csv_tool({"path": target_path}, current_df)
+                            result = await load_csv_tool(
+                                {"path": target_path}, current_df
+                            )
                         current_df = result
                         args = {"path": target_path}
                     else:
                         result = await VALID_TOOLS[action](args, current_df)
-                        if hasattr(result, "columns") and hasattr(result, "head"):
+                        if hasattr(result, "columns") and hasattr(
+                            result, "head"
+                        ):
                             current_df = result
 
                     last_result = result
-                    tool_outputs.append({
-                        "action": action,
-                        "args": args,
-                        "result": serialize_result(result)
-                    })
+                    tool_outputs.append(
+                        {
+                            "action": action,
+                            "args": args,
+                            "result": serialize_result(result),
+                        }
+                    )
                 except Exception as e:
-                    logger.warning(f"[DataAgent] Tool '{action}' failed: {e}")
+                    logger.warning(
+                        f"[DataAgent] Tool '{action}' failed: {e}"
+                    )
                     tool_failed = True
                     break
 
@@ -509,7 +564,7 @@ class DataAgent:
             tool_outputs_json = format_tool_outputs_for_prompt(tool_outputs)
             final_repair_prompt = REPAIR_ADD_FINAL_PROMPT.format(
                 tool_outputs=tool_outputs_json,
-                allowed_columns=allowed_columns_text
+                allowed_columns=allowed_columns_text,
             )
 
             repaired_final = None
@@ -518,10 +573,10 @@ class DataAgent:
                     rep = await chat_completion(
                         [
                             {"role": "system", "content": base_prompt},
-                            {"role": "user",   "content": final_repair_prompt}
+                            {"role": "user", "content": final_repair_prompt},
                         ],
-                        provider_index=provider_idx,
-                        model_index=model_idx
+                        provider_index=p_idx,
+                        model_index=m_idx,
                     )
                 except Exception:
                     continue
@@ -544,8 +599,8 @@ class DataAgent:
                         question=question,
                         proposed_answer=repaired_final,
                         tool_outputs=tool_outputs,
-                        provider_idx=provider_idx,
-                        model_idx=model_idx
+                        provider_idx=p_idx,
+                        model_idx=m_idx,
                     )
                     return verified_answer
 
@@ -561,26 +616,27 @@ class DataAgent:
         proposed_answer: str,
         tool_outputs: List[dict],
         provider_idx: int,
-        model_idx: int
+        model_idx: int,
     ) -> str:
         """
-        Ask the LLM to double-check its own answer using the collected tool outputs.
+        Ask the LLM to double-check its own answer using the collected tool
+        outputs.
         """
         tool_outputs_text = format_tool_outputs_for_prompt(tool_outputs)
         verify_prompt = VERIFICATION_PROMPT.format(
             question=question,
             final_answer=proposed_answer,
-            tool_outputs=tool_outputs_text
+            tool_outputs=tool_outputs_text,
         )
 
         try:
             resp = await chat_completion(
                 [
                     {"role": "system", "content": VERIFIER_SYSTEM_PROMPT},
-                    {"role": "user", "content": verify_prompt}
+                    {"role": "user", "content": verify_prompt},
                 ],
                 provider_index=provider_idx,
-                model_index=model_idx
+                model_index=model_idx,
             )
         except Exception:
             return proposed_answer

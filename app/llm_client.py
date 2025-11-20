@@ -29,7 +29,9 @@ ALL_PROVIDERS = [AIPIPE_PROVIDER]
 # ***************************************************************
 # MAIN COMPLETION FUNCTION WITH FULL SEMANTIC FAILOVER
 # ***************************************************************
-async def chat_completion(messages, provider_index=0, model_index=0, timeout=20):
+async def chat_completion(
+    messages, provider_index=0, model_index=0, timeout=20
+):
     """
     provider_index: which provider to use
     model_index: which model inside the provider to use (for OpenRouter)
@@ -46,10 +48,12 @@ async def chat_completion(messages, provider_index=0, model_index=0, timeout=20)
     models = [m for m in models if m]
 
     if not models:
-        raise RuntimeError(f"No models configured for provider {provider['name']}")
+        raise RuntimeError(
+            f"No models configured for provider {provider['name']}"
+        )
 
     if model_index >= len(models):
-        return await chat_completion(messages, provider_index+1, 0, timeout)
+        return await chat_completion(messages, provider_index + 1, 0, timeout)
 
     model = models[model_index]
 
@@ -57,35 +61,38 @@ async def chat_completion(messages, provider_index=0, model_index=0, timeout=20)
     # TRY AIPIPE PROVIDER (OpenAI-compatible endpoint)
     # ======================================================
     if provider["type"] == "aipipe":
-
         if not provider["api_key"]:
             print("[AIPipe] No API key — skipping")
-            return await chat_completion(messages, provider_index+1, 0, timeout)
+            return await chat_completion(
+                messages, provider_index + 1, 0, timeout
+            )
 
         headers = {
             "Authorization": f"Bearer {provider['api_key']}",
-            "Content-Type": "application/json"
+            "Content-Type": "application/json",
         }
 
-        payload = {
-            "model": model,
-            "messages": messages
-        }
+        payload = {"model": model, "messages": messages}
 
         try:
             async with httpx.AsyncClient(timeout=timeout) as client:
                 resp = await client.post(
-                    provider["url"],
-                    headers=headers,
-                    json=payload
+                    provider["url"], headers=headers, json=payload
                 )
         except Exception as e:
             print(f"[AIPipe EXCEPTION] {model} → {e}")
-            return await chat_completion(messages, provider_index, model_index+1, timeout)
+            return await chat_completion(
+                messages, provider_index, model_index + 1, timeout
+            )
 
         if resp.status_code != 200:
-            print(f"[AIPipe ERROR] {model} → {resp.status_code} {resp.text[:200]}")
-            return await chat_completion(messages, provider_index, model_index+1, timeout)
+            print(
+                f"[AIPipe ERROR] {model} → {resp.status_code} "
+                f"{resp.text[:200]}"
+            )
+            return await chat_completion(
+                messages, provider_index, model_index + 1, timeout
+            )
 
         try:
             content = resp.json()["choices"][0]["message"]["content"]
@@ -95,4 +102,6 @@ async def chat_completion(messages, provider_index=0, model_index=0, timeout=20)
 
         except Exception as e:
             print(f"[AIPipe PARSE ERROR] {model} → {e}")
-            return await chat_completion(messages, provider_index, model_index+1, timeout)
+            return await chat_completion(
+                messages, provider_index, model_index + 1, timeout
+            )

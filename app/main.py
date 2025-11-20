@@ -39,11 +39,15 @@ async def solve(payload: SolvePayload, request: Request):
             raise HTTPException(status_code=403, detail="Invalid secret")
     else:
         # If no secret configured, warn but allow (useful in local dev)
-        logger.warning("No QUIZ_SECRET configured in environment — skipping secret check")
+        logger.warning(
+            "No QUIZ_SECRET configured in environment — skipping secret check"
+        )
 
     # call orchestrator (note ordering: url, email, secret)
     try:
-        result = await orchestrator.handle_task(payload.url, payload.email, payload.secret)
+        result = await orchestrator.handle_task(
+            payload.url, payload.email, payload.secret
+        )
     except Exception as e:
         logger.exception("Error while handling task")
         raise HTTPException(status_code=500, detail=str(e))
