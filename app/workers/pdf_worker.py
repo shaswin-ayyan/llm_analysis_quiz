@@ -1,9 +1,11 @@
 import pdfplumber
 import io
-import httpx
-from loguru import logger
-from ..utils.fetch_file import download_bytes
+import logging
 import pandas as pd
+from ..utils.fetch_file import download_bytes
+
+logger = logging.getLogger("uvicorn.error")
+
 
 class PDFWorker:
     async def parse_pdf(self, url: str) -> str:
@@ -17,7 +19,7 @@ class PDFWorker:
         except Exception as e:
             logger.warning(f"pdfplumber failed: {e}")
             # fallback: return raw bytes placeholder
-            return data.decode(errors='ignore')[:10000]
+            return data.decode(errors="ignore")[:10000]
         return "\n".join(text_chunks)
 
     async def extract_tables(self, url: str) -> list[pd.DataFrame]:

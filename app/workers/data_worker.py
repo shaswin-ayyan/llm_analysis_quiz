@@ -1,10 +1,12 @@
 import pandas as pd
 import httpx
 from io import StringIO
-from loguru import logger
+import logging
+
+logger = logging.getLogger("uvicorn.error")
+
 
 class DataWorker:
-
     async def load_csv(self, url: str) -> pd.DataFrame:
         logger.info(f"Downloading CSV from {url}")
         async with httpx.AsyncClient() as client:
@@ -21,7 +23,9 @@ class DataWorker:
         results = {}
         for region, group in df.groupby("Region"):
             try:
-                corr = group["Marketing_Spend_USD"].corr(group["Net_Revenue_USD"])
+                corr = group["Marketing_Spend_USD"].corr(
+                    group["Net_Revenue_USD"]
+                )
                 results[region] = corr
             except Exception as e:
                 logger.error(f"Correlation failed for region {region}: {e}")

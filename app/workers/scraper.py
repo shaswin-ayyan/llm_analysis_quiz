@@ -1,8 +1,9 @@
 import logging
-import aiohttp
-import pandas as pd
 from urllib.parse import urljoin
 from app.utils.browser import render_page_with_retries
+import aiohttp
+import pandas as pd
+from io import StringIO
 
 logger = logging.getLogger(__name__)
 
@@ -87,7 +88,9 @@ def extract_question(html: str) -> str:
         return clean_html_text(txt)
 
     # Try <div id="result">
-    res_match = re.search(r'<div id="result"[^>]*>(.*?)</div>', html, re.DOTALL)
+    res_match = re.search(
+        r'<div id="result"[^>]*>(.*?)</div>', html, re.DOTALL
+    )
     if res_match:
         txt = res_match.group(1)
         return clean_html_text(txt)
@@ -98,6 +101,7 @@ def extract_question(html: str) -> str:
 
 def clean_html_text(txt: str) -> str:
     import re
+
     # Remove HTML tags
     txt = re.sub(r"<.*?>", "", txt)
     # Normalize whitespace
@@ -106,6 +110,7 @@ def clean_html_text(txt: str) -> str:
 
 def find_csv_link(html, base_url):
     import re
+
     match = re.search(r'href="([^"]+\.csv)"', html)
     if match:
         link = match.group(1)
@@ -118,6 +123,7 @@ def find_pdf_link(html: str, base_url: str):
     Detects PDF hyperlink in HTML.
     """
     import re
+
     match = re.search(r'href="([^"]+\.pdf)"', html)
     if match:
         link = match.group(1)
@@ -131,10 +137,6 @@ async def load_csv_from_url(url: str):
     """
     Load CSV safely. Detects HTML pages masquerading as CSV and handles them.
     """
-    import aiohttp
-    import pandas as pd
-    from io import StringIO
-
     async with aiohttp.ClientSession() as session:
         async with session.get(url) as resp:
             raw = await resp.text()
@@ -157,4 +159,3 @@ async def load_csv_from_url(url: str):
                     f"Reason: {str(e)}\n"
                     f"First 200 chars: {raw[:200]}"
                 )
-

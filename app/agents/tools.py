@@ -41,7 +41,8 @@ async def load_csv_tool(args, df):
             if not html_df.empty:
                 return html_df
             raise RuntimeError(
-                f"Expected CSV but got HTML. URL: {file_path}\nPreview: {raw[:200]!r}"
+                f"Expected CSV but got HTML. URL: {file_path}\n"
+                f"Preview: {raw[:200]!r}"
             )
 
         try:
@@ -57,7 +58,9 @@ async def load_csv_tool(args, df):
     except Exception as e:
         # Last-ditch attempt: treat the file as HTML and parse tables
         try:
-            with open(file_path, "r", encoding="utf-8", errors="ignore") as handle:
+            with open(
+                file_path, "r", encoding="utf-8", errors="ignore"
+            ) as handle:
                 raw = handle.read()
             if "<html" in raw.lower():
                 html_df = html_table_to_df(raw)
