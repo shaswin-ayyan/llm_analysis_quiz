@@ -11,3 +11,4 @@ build/
 coverage/
 .pycharm*
 .DS_Store
+app.log
