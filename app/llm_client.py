@@ -8,12 +8,30 @@ load_dotenv()
 # PROVIDERS CONFIG
 # ======================
 
+ALL_PROVIDERS = []
+
+# ======================
+# GEMINI PROVIDER
+# ======================
+if settings.GEMINI_API_KEY:
+    GEMINI_PROVIDER = {
+        "name": "Gemini",
+        "type": "gemini",
+        "url": "https://generativelanguage.googleapis.com/v1beta/models",
+        "api_key": settings.GEMINI_API_KEY,
+        "models": [settings.GEMINI_MODEL],
+    }
+    ALL_PROVIDERS.append(GEMINI_PROVIDER)
+
+# ======================
+# AIPipe Provider
+# ======================
 PRIMARY_MODELS = []
 if settings.LLM_CHAT_MODEL:
     PRIMARY_MODELS.append(settings.LLM_CHAT_MODEL)
-for model in settings.LLM_FALLBACK_MODELS:
-    if model and model not in PRIMARY_MODELS:
-        PRIMARY_MODELS.append(model)
+for m in settings.LLM_FALLBACK_MODELS:
+    if m not in PRIMARY_MODELS:
+        PRIMARY_MODELS.append(m)
 
 AIPIPE_PROVIDER = {
     "name": "AIPipe",
@@ -22,75 +40,117 @@ AIPIPE_PROVIDER = {
     "api_key": settings.OPENAI_API_KEY,
     "models": PRIMARY_MODELS,
 }
+ALL_PROVIDERS.append(AIPIPE_PROVIDER)
 
-ALL_PROVIDERS = [AIPIPE_PROVIDER]
+# ======================
+# OpenRouter Provider
+# ======================
+if settings.OPENROUTER_API_KEY:
+    OPENROUTER_PROVIDER = {
+        "name": "OpenRouter",
+        "type": "openrouter",
+        "url": "https://openrouter.ai/api/v1/chat/completions",
+        "api_key": settings.OPENROUTER_API_KEY,
+        "models": settings.OPENROUTER_MODELS,
+    }
+    ALL_PROVIDERS.append(OPENROUTER_PROVIDER)
 
 
 # ***************************************************************
 # MAIN COMPLETION FUNCTION WITH FULL SEMANTIC FAILOVER
 # ***************************************************************
-async def chat_completion(messages, provider_index=0, model_index=0, timeout=20):
-    """
-    provider_index: which provider to use
-    model_index: which model inside the provider to use (for OpenRouter)
-    """
+def convert_openai_messages_to_gemini(messages):
+    converted = []
 
-    # --------------------
-    # IF ALL FAILED
-    # --------------------
+    system_prompt = ""
+    for msg in messages:
+        if msg["role"] == "system":
+            # Collect system messages and merge later
+            system_prompt += msg["content"] + "\n"
+        else:
+            converted.append({
+                "role": msg["role"],
+                "parts": [{"text": msg["content"]}]
+            })
+
+    # Prepend system prompt into first user message
+    if system_prompt:
+        if len(converted) > 0:
+            converted[0]["parts"][0]["text"] = system_prompt + "\n" + converted[0]["parts"][0]["text"]
+        else:
+            converted.append({
+                "role": "user",
+                "parts": [{"text": system_prompt}]
+            })
+
+    return converted
+
+async def chat_completion(messages, provider_index=0, model_index=0, timeout=20):
     if provider_index >= len(ALL_PROVIDERS):
-        raise RuntimeError("All LLM providers failed semantically.")
+        raise RuntimeError("All providers failed.")
 
     provider = ALL_PROVIDERS[provider_index]
-    models = provider.get("models") or [provider.get("model")]
-    models = [m for m in models if m]
-
-    if not models:
-        raise RuntimeError(f"No models configured for provider {provider['name']}")
-
+    models = provider.get("models") or []
     if model_index >= len(models):
+        # move to next provider
         return await chat_completion(messages, provider_index + 1, 0, timeout)
 
     model = models[model_index]
 
-    # ======================================================
-    # TRY AIPIPE PROVIDER (OpenAI-compatible endpoint)
-    # ======================================================
-    if provider["type"] == "aipipe":
-        if not provider["api_key"]:
-            print("[AIPipe] No API key — skipping")
-            return await chat_completion(messages, provider_index + 1, 0, timeout)
+    headers = {"Content-Type": "application/json"}
+    payload = {}
 
-        headers = {
-            "Authorization": f"Bearer {provider['api_key']}",
-            "Content-Type": "application/json",
-        }
+    try:
+        # ==============================
+        # GEMINI
+        # ==============================
+        if provider["type"] == "gemini":
+            headers["x-goog-api-key"] = provider["api_key"]
+            url = f"{provider['url']}/{model}:generateContent"
+            gemini_messages = convert_openai_messages_to_gemini(messages)
+            payload = {
+                "contents": gemini_messages
+            }
 
-        payload = {"model": model, "messages": messages}
+        # ==============================
+        # AIPIPE (OpenAI-compatible)
+        # ==============================
+        elif provider["type"] == "aipipe":
+            headers["Authorization"] = f"Bearer {provider['api_key']}"
+            url = provider["url"]
+            payload = {"model": model, "messages": messages}
 
-        try:
-            async with httpx.AsyncClient(timeout=timeout) as client:
-                resp = await client.post(provider["url"], headers=headers, json=payload)
-        except Exception as e:
-            print(f"[AIPipe EXCEPTION] {model} → {e}")
-            return await chat_completion(
-                messages, provider_index, model_index + 1, timeout
-            )
+        # ==============================
+        # OPENROUTER
+        # ==============================
+        elif provider["type"] == "openrouter":
+            headers["Authorization"] = f"Bearer {provider['api_key']}"
+            url = provider["url"]
+            payload = {"model": model, "messages": messages}
+
+        # ==============================
+        # MAKE THE REQUEST
+        # ==============================
+        async with httpx.AsyncClient(timeout=timeout) as client:
+            resp = await client.post(url, headers=headers, json=payload)
 
         if resp.status_code != 200:
-            print(f"[AIPipe ERROR] {model} → {resp.status_code} {resp.text[:200]}")
-            return await chat_completion(
-                messages, provider_index, model_index + 1, timeout
-            )
+            print(f"[ERROR {provider['name']}] {model}: {resp.status_code}")
+            return await chat_completion(messages, provider_index, model_index + 1, timeout)
 
-        try:
-            content = resp.json()["choices"][0]["message"]["content"]
-            print(f"[LLM] Using AIPipe model: {model}")
-            print(f"[LLM SHORT] {content[:150]}")
-            return content
+        data = resp.json()
 
-        except Exception as e:
-            print(f"[AIPipe PARSE ERROR] {model} → {e}")
-            return await chat_completion(
-                messages, provider_index, model_index + 1, timeout
-            )
+        # Gemini parsing
+        if provider["type"] == "gemini":
+            content = data["candidates"][0]["content"]["parts"][0]["text"]
+
+        # OpenAI-style parsing (AIPipe, OpenRouter)
+        else:
+            content = data["choices"][0]["message"]["content"]
+
+        print(f"[LLM] Using {provider['name']} → {model}")
+        return content
+
+    except Exception as e:
+        print(f"[EXCEPTION] {provider['name']} {model}: {e}")
+        return await chat_completion(messages, provider_index, model_index + 1, timeout)
