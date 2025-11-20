@@ -30,7 +30,7 @@ def test_e2e_successful_run(mock_run, client, mock_server):
         json={
             "email": "test@example.com",
             "url": f"{mock_server}/quiz/123",
-            "secret": "test_secret",
+            "secret": os.environ.get("QUIZ_SECRET"),
         },
     )
     assert response.status_code == 200
@@ -44,7 +44,7 @@ def test_e2e_incorrect_answer(mock_run, client, mock_server):
         json={
             "email": "test@example.com",
             "url": f"{mock_server}/quiz/123",
-            "secret": "test_secret",
+            "secret": os.environ.get("QUIZ_SECRET"),
         },
     )
     assert response.status_code == 200
@@ -58,7 +58,7 @@ def test_e2e_timeout(mock_render, client, mock_server):
         json={
             "email": "test@example.com",
             "url": f"{mock_server}/quiz/123",
-            "secret": "test_secret",
+            "secret": os.environ.get("QUIZ_SECRET"),
         },
     )
     assert response.status_code == 500
@@ -73,7 +73,7 @@ def test_e2e_multistep_quiz(mock_run, client, mock_server):
         json={
             "email": "test@example.com",
             "url": f"{mock_server}/quiz/multistep1",
-            "secret": "test_secret",
+            "secret": os.environ.get("QUIZ_SECRET"),
         },
     )
     assert response.status_code == 200

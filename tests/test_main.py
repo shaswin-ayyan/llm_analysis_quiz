@@ -35,7 +35,7 @@ def test_solve_valid_secret(mock_handle_task, client):
         json={
             "email": "test@example.com",
             "url": "http://example.com",
-            "secret": "test_secret",
+            "secret": os.environ.get("QUIZ_SECRET"),
         },
     )
     assert response.status_code == 200

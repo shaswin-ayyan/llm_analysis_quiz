@@ -4,8 +4,11 @@ import pandas as pd
 import aiohttp
 from io import StringIO
 from urllib.parse import urlparse
+import logging
 
 from app.utils.parse_table import html_table_to_df, normalize_dataframe
+
+logger = logging.getLogger(__name__)
 
 
 # ============================================================
@@ -67,7 +70,8 @@ async def load_csv_tool(args, df):
                 html_df = normalize_dataframe(html_df)
                 if not html_df.empty:
                     return html_df
-        except Exception:
+        except (FileNotFoundError, IsADirectoryError) as file_error:
+            logger.warning(f"Error reading file as HTML: {file_error}")
             pass
         raise RuntimeError(f"Failed to read local CSV '{file_path}': {e}")
 

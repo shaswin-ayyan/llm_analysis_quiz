@@ -11,7 +11,7 @@ from app.agents.tools import (
     correlation_tool,
     summary_stats_tool,
     top_group_by_tool,
-    filter_tool
+    filter_tool,
 )
 
 logger = logging.getLogger(__name__)
@@ -20,6 +20,7 @@ logger = logging.getLogger(__name__)
 # ============================================================
 # Utility Functions
 # ============================================================
+
 
 def extract_json(text: str) -> str:
     """Strip fenced code blocks and return raw JSON text."""
@@ -36,7 +37,7 @@ def safe_json_load(s: str):
     """Safe JSON loader returning (obj, error)."""
     try:
         return json.loads(s), None
-    except Exception as e:
+    except json.JSONDecodeError as e:
         return None, str(e)
 
 
@@ -59,15 +60,16 @@ def serialize_result(res: Any, max_rows: int = 3):
         if hasattr(res, "head") and hasattr(res, "to_list"):
             return {
                 "type": "series",
-                "values": res.head(max_rows * 2).to_list()
+                "values": res.head(max_rows * 2).to_list(),
             }
-    except Exception:
+    except Exception as e:
+        logger.warning(f"Error serializing result: {e}")
         pass
 
     try:
         json.dumps(res)
         return res
-    except Exception:
+    except TypeError:
         return str(res)
 
 
@@ -224,6 +226,7 @@ VERIFICATION_PROMPT = (
 # DataAgent Class
 # ============================================================
 
+
 class DataAgent:
     def __init__(self):
         pass
@@ -273,11 +276,7 @@ class DataAgent:
                     args[arg_name] = normalized
                 else:
                     invalid.append(
-                        {
-                            "action": action,
-                            "arg": arg_name,
-                            "value": val,
-                        }
+                        {"action": action, "arg": arg_name, "value": val}
                     )
         return invalid, plan
 
@@ -391,7 +390,8 @@ class DataAgent:
                             provider_index=p_idx,
                             model_index=m_idx,
                         )
-                    except Exception:
+                    except Exception as e:
+                        logger.warning(f"Error repairing JSON: {e}")
                         continue
 
                     rep_clean = extract_json(rep)
@@ -438,7 +438,8 @@ class DataAgent:
                     if not plan2 or err2:
                         continue
                     plan = plan2
-                except Exception:
+                except Exception as e:
+                    logger.warning(f"Error repairing plan shape: {e}")
                     continue
 
             # Column validation / normalization
@@ -469,7 +470,8 @@ class DataAgent:
                         provider_index=p_idx,
                         model_index=m_idx,
                     )
-                except Exception:
+                except Exception as e:
+                    logger.warning(f"Error repairing columns: {e}")
                     continue
 
                 rep_clean = extract_json(rep)
@@ -541,7 +543,6 @@ class DataAgent:
                         ):
                             current_df = result
 
-                    last_result = result
                     tool_outputs.append(
                         {
                             "action": action,
@@ -578,7 +579,8 @@ class DataAgent:
                         provider_index=p_idx,
                         model_index=m_idx,
                     )
-                except Exception:
+                except Exception as e:
+                    logger.warning(f"Error adding final answer: {e}")
                     continue
 
                 rep_clean = extract_json(rep)
