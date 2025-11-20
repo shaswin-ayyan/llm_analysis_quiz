@@ -88,9 +88,7 @@ def extract_question(html: str) -> str:
         return clean_html_text(txt)
 
     # Try <div id="result">
-    res_match = re.search(
-        r'<div id="result"[^>]*>(.*?)</div>', html, re.DOTALL
-    )
+    res_match = re.search(r'<div id="result"[^>]*>(.*?)</div>', html, re.DOTALL)
     if res_match:
         txt = res_match.group(1)
         return clean_html_text(txt)
@@ -144,8 +142,7 @@ async def load_csv_from_url(url: str):
             # Detect HTML error
             if "<html" in raw.lower() or "<!doctype" in raw.lower():
                 raise RuntimeError(
-                    f"URL returned HTML, not CSV: {url}\n"
-                    f"Content snippet: {raw[:200]}"
+                    f"URL returned HTML, not CSV: {url}\nContent snippet: {raw[:200]}"
                 )
 
             # Detect malformed CSV: if lines contain commas mismatch

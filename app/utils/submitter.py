@@ -16,18 +16,14 @@ async def submit_answer(
     headers = {"Content-Type": "application/json"}
     try:
         async with httpx.AsyncClient(timeout=timeout) as client:
-            resp = await client.post(
-                submit_url, json=payload, headers=headers
-            )
+            resp = await client.post(submit_url, json=payload, headers=headers)
             try:
                 data = resp.json()
             except Exception:
                 data = {"text": resp.text}
 
             if resp.status_code >= 400:
-                logger.error(
-                    f"Submit failed {resp.status_code}: {resp.text}"
-                )
+                logger.error(f"Submit failed {resp.status_code}: {resp.text}")
                 data.setdefault("correct", False)
                 data.setdefault("status_code", resp.status_code)
             return data

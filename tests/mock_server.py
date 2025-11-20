@@ -3,6 +3,7 @@ from fastapi.responses import HTMLResponse, PlainTextResponse
 
 app = FastAPI()
 
+
 @app.get("/quiz/{quiz_id}", response_class=HTMLResponse)
 async def get_quiz(quiz_id: str):
     if quiz_id == "multistep1":
@@ -36,9 +37,11 @@ async def get_quiz(quiz_id: str):
         </html>
         """
 
+
 @app.get("/data.csv", response_class=PlainTextResponse)
 async def get_csv():
     return "value\n2\n2"
+
 
 @app.post("/submit/{quiz_id}")
 async def submit(quiz_id: str, request: Request):

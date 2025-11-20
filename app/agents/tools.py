@@ -4,8 +4,11 @@ import pandas as pd
 import aiohttp
 from io import StringIO
 from urllib.parse import urlparse
+import logging
 
 from app.utils.parse_table import html_table_to_df, normalize_dataframe
+
+logger = logging.getLogger(__name__)
 
 
 # ============================================================
@@ -41,8 +44,7 @@ async def load_csv_tool(args, df):
             if not html_df.empty:
                 return html_df
             raise RuntimeError(
-                f"Expected CSV but got HTML. URL: {file_path}\n"
-                f"Preview: {raw[:200]!r}"
+                f"Expected CSV but got HTML. URL: {file_path}\nPreview: {raw[:200]!r}"
             )
 
         try:
@@ -58,16 +60,15 @@ async def load_csv_tool(args, df):
     except Exception as e:
         # Last-ditch attempt: treat the file as HTML and parse tables
         try:
-            with open(
-                file_path, "r", encoding="utf-8", errors="ignore"
-            ) as handle:
+            with open(file_path, "r", encoding="utf-8", errors="ignore") as handle:
                 raw = handle.read()
             if "<html" in raw.lower():
                 html_df = html_table_to_df(raw)
                 html_df = normalize_dataframe(html_df)
                 if not html_df.empty:
                     return html_df
-        except Exception:
+        except (FileNotFoundError, IsADirectoryError) as file_error:
+            logger.warning(f"Error reading file as HTML: {file_error}")
             pass
         raise RuntimeError(f"Failed to read local CSV '{file_path}': {e}")
 
@@ -155,11 +156,7 @@ async def top_group_by_tool(args, df):
         raise ValueError(f"Column '{col}' not in dataframe")
 
     grouped = (
-        df.groupby(by)[col]
-        .sum()
-        .sort_values(ascending=False)
-        .head(int(n))
-        .to_dict()
+        df.groupby(by)[col].sum().sort_values(ascending=False).head(int(n)).to_dict()
     )
 
     return grouped

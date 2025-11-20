@@ -11,7 +11,7 @@ from app.agents.tools import (
     correlation_tool,
     summary_stats_tool,
     top_group_by_tool,
-    filter_tool
+    filter_tool,
 )
 
 logger = logging.getLogger(__name__)
@@ -20,6 +20,7 @@ logger = logging.getLogger(__name__)
 # ============================================================
 # Utility Functions
 # ============================================================
+
 
 def extract_json(text: str) -> str:
     """Strip fenced code blocks and return raw JSON text."""
@@ -36,7 +37,7 @@ def safe_json_load(s: str):
     """Safe JSON loader returning (obj, error)."""
     try:
         return json.loads(s), None
-    except Exception as e:
+    except json.JSONDecodeError as e:
         return None, str(e)
 
 
@@ -59,15 +60,16 @@ def serialize_result(res: Any, max_rows: int = 3):
         if hasattr(res, "head") and hasattr(res, "to_list"):
             return {
                 "type": "series",
-                "values": res.head(max_rows * 2).to_list()
+                "values": res.head(max_rows * 2).to_list(),
             }
-    except Exception:
+    except Exception as e:
+        logger.warning(f"Error serializing result: {e}")
         pass
 
     try:
         json.dumps(res)
         return res
-    except Exception:
+    except TypeError:
         return str(res)
 
 
@@ -144,21 +146,21 @@ COLUMN_ARG_NAMES = {
 BASE_PROMPT = (
     "SYSTEM: You are an analytical, tool-using data scientist. "
     "You MUST output ONLY a JSON LIST. The LAST element MUST be a final "
-    "answer as {{\"final_answer\": \"<value>\"}}.\n\n"
+    'answer as {{"final_answer": "<value>"}}.\n\n'
     "DATASET SNAPSHOT:\n"
     "{data_profile}\n\n"
     "Detected columns (use EXACT spellings or inspect dataframe head): "
     "{allowed_columns}\n\n"
     "TOOL SCHEMA:\n"
-    "  {{\"action\": \"load_csv\", \"args\": {{\"path\": \"<csv_url>\"}}}},\n"
-    "  {{\"action\": \"correlation\", \"args\": {{\"column_x\": \"<col>\", "
-    "\"column_y\": \"<col>\", \"group_by\": \"<optional>\"}}}},\n"
-    "  {{\"action\": \"summary_stats\", \"args\": {{\"column\": "
-    "\"<optional>\", \"group_by\": \"<optional>\"}}}},\n"
-    "  {{\"action\": \"top_group_by\", \"args\": {{\"group_by\": \"<col>\", "
-    "\"value_col\": \"<col>\", \"n\": <int>}}}},\n"
-    "  {{\"action\": \"filter\", \"args\": {{\"column\": \"<col>\", \"op\": "
-    "\"<op>\", \"value\": <val>}}}},\n\n"
+    '  {{"action": "load_csv", "args": {{"path": "<csv_url>"}}}},\n'
+    '  {{"action": "correlation", "args": {{"column_x": "<col>", '
+    '"column_y": "<col>", "group_by": "<optional>"}}}},\n'
+    '  {{"action": "summary_stats", "args": {{"column": '
+    '"<optional>", "group_by": "<optional>"}}}},\n'
+    '  {{"action": "top_group_by", "args": {{"group_by": "<col>", '
+    '"value_col": "<col>", "n": <int>}}}},\n'
+    '  {{"action": "filter", "args": {{"column": "<col>", "op": '
+    '"<op>", "value": <val>}}}},\n\n'
     "RULES:\n"
     "- Carefully read the question and plan each tool call before "
     "answering.\n"
@@ -171,10 +173,10 @@ BASE_PROMPT = (
     "final_answer.\n\n"
     "EXAMPLE STRUCTURE:\n"
     "[\n"
-    "  {{\"action\": \"load_csv\", \"args\": {{\"path\": \"<csv_url>\"}}}},\n"
-    "  {{\"action\": \"summary_stats\", \"args\": {{\"column\": "
-    "\"<column_name>\"}}}},\n"
-    "  {{\"final_answer\": \"<result>\"}}\n"
+    '  {{"action": "load_csv", "args": {{"path": "<csv_url>"}}}},\n'
+    '  {{"action": "summary_stats", "args": {{"column": '
+    '"<column_name>"}}}},\n'
+    '  {{"final_answer": "<result>"}}\n'
     "]\n\n"
     "USER: {user_payload}\n"
 )
@@ -184,7 +186,7 @@ REPAIR_INVALID_JSON_PROMPT = (
     "The previous output contained INVALID JSON. Here is the output:\n"
     "{bad_output}\n\n"
     "Fix it to valid JSON list ONLY. Follow TOOL SCHEMA and MUST include "
-    "{{\"final_answer\": \"<value>\"}} as last element.\n"
+    '{{"final_answer": "<value>"}} as last element.\n'
     "Allowed columns: {allowed_columns}\n"
     "Return ONLY corrected JSON."
 )
@@ -201,14 +203,13 @@ REPAIR_ADD_FINAL_PROMPT = (
     "final_answer.\n"
     "Executed tool outputs:\n"
     "{tool_outputs}\n\n"
-    "Append a final step {{\"final_answer\": \"<value>\"}}.\n"
+    'Append a final step {{"final_answer": "<value>"}}.\n'
     "Return ONLY the corrected JSON list.\n"
     "Allowed columns: {allowed_columns}"
 )
 
 VERIFIER_SYSTEM_PROMPT = (
-    "You verify analytical answers using structured data. Respond ONLY with "
-    "JSON."
+    "You verify analytical answers using structured data. Respond ONLY with JSON."
 )
 
 VERIFICATION_PROMPT = (
@@ -223,6 +224,7 @@ VERIFICATION_PROMPT = (
 # ============================================================
 # DataAgent Class
 # ============================================================
+
 
 class DataAgent:
     def __init__(self):
@@ -252,9 +254,7 @@ class DataAgent:
         return attempts
 
     @staticmethod
-    def _normalize_and_validate_plan_columns(
-        plan, allowed_columns: List[str]
-    ):
+    def _normalize_and_validate_plan_columns(plan, allowed_columns: List[str]):
         allowed_map = {c.lower(): c for c in allowed_columns}
         invalid = []
 
@@ -272,13 +272,7 @@ class DataAgent:
                 if normalized:
                     args[arg_name] = normalized
                 else:
-                    invalid.append(
-                        {
-                            "action": action,
-                            "arg": arg_name,
-                            "value": val,
-                        }
-                    )
+                    invalid.append({"action": action, "arg": arg_name, "value": val})
         return invalid, plan
 
     async def run(
@@ -297,9 +291,7 @@ class DataAgent:
             try:
                 cached_df = await load_csv_tool({"path": csv_url}, None)
             except Exception as exc:
-                logger.error(
-                    f"[DataAgent] Failed to load CSV {csv_url}: {exc}"
-                )
+                logger.error(f"[DataAgent] Failed to load CSV {csv_url}: {exc}")
                 return {"error": "csv_load_failed", "details": str(exc)}
 
         dataset_profile = build_dataset_profile(cached_df)
@@ -307,14 +299,11 @@ class DataAgent:
         allowed_columns_text = (
             ", ".join(allowed_columns) if allowed_columns else "Not detected"
         )
-        data_profile_str = json.dumps(
-            dataset_profile, ensure_ascii=False, default=str
-        )
+        data_profile_str = json.dumps(dataset_profile, ensure_ascii=False, default=str)
 
         context_lines = [
             "Return ONLY tool JSON per schema.",
-            f"This is attempt #{attempt_number}. You must maximize "
-            "accuracy.",
+            f"This is attempt #{attempt_number}. You must maximize accuracy.",
             "Double-check calculations before producing final_answer.",
         ]
         if prior_feedback:
@@ -391,7 +380,8 @@ class DataAgent:
                             provider_index=p_idx,
                             model_index=m_idx,
                         )
-                    except Exception:
+                    except Exception as e:
+                        logger.warning(f"Error repairing JSON: {e}")
                         continue
 
                     rep_clean = extract_json(rep)
@@ -438,7 +428,8 @@ class DataAgent:
                     if not plan2 or err2:
                         continue
                     plan = plan2
-                except Exception:
+                except Exception as e:
+                    logger.warning(f"Error repairing plan shape: {e}")
                     continue
 
             # Column validation / normalization
@@ -446,16 +437,12 @@ class DataAgent:
                 (
                     invalid_columns,
                     plan,
-                ) = self._normalize_and_validate_plan_columns(
-                    plan, allowed_columns
-                )
+                ) = self._normalize_and_validate_plan_columns(plan, allowed_columns)
             else:
                 invalid_columns = []
 
             if invalid_columns:
-                invalid_json = json.dumps(
-                    invalid_columns, ensure_ascii=False
-                )
+                invalid_json = json.dumps(invalid_columns, ensure_ascii=False)
                 repair_prompt = REPAIR_INVALID_COLUMNS_PROMPT.format(
                     invalid_columns=invalid_json,
                     allowed_columns=allowed_columns_text,
@@ -469,7 +456,8 @@ class DataAgent:
                         provider_index=p_idx,
                         model_index=m_idx,
                     )
-                except Exception:
+                except Exception as e:
+                    logger.warning(f"Error repairing columns: {e}")
                     continue
 
                 rep_clean = extract_json(rep)
@@ -484,9 +472,7 @@ class DataAgent:
                     (
                         invalid_columns,
                         plan,
-                    ) = self._normalize_and_validate_plan_columns(
-                        plan, allowed_columns
-                    )
+                    ) = self._normalize_and_validate_plan_columns(plan, allowed_columns)
                     if invalid_columns:
                         logger.warning(
                             "[DataAgent] Plan still has invalid "
@@ -536,12 +522,9 @@ class DataAgent:
                         args = {"path": target_path}
                     else:
                         result = await VALID_TOOLS[action](args, current_df)
-                        if hasattr(result, "columns") and hasattr(
-                            result, "head"
-                        ):
+                        if hasattr(result, "columns") and hasattr(result, "head"):
                             current_df = result
 
-                    last_result = result
                     tool_outputs.append(
                         {
                             "action": action,
@@ -550,9 +533,7 @@ class DataAgent:
                         }
                     )
                 except Exception as e:
-                    logger.warning(
-                        f"[DataAgent] Tool '{action}' failed: {e}"
-                    )
+                    logger.warning(f"[DataAgent] Tool '{action}' failed: {e}")
                     tool_failed = True
                     break
 
@@ -578,7 +559,8 @@ class DataAgent:
                         provider_index=p_idx,
                         model_index=m_idx,
                     )
-                except Exception:
+                except Exception as e:
+                    logger.warning(f"Error adding final answer: {e}")
                     continue
 
                 rep_clean = extract_json(rep)

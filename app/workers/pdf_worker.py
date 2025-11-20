@@ -16,7 +16,7 @@ class PDFWorker:
             with pdfplumber.open(io.BytesIO(data)) as pdf:
                 for page in pdf.pages:
                     text_chunks.append(page.extract_text() or "")
-        except Exception as e:
+        except pdfplumber.PDFSyntaxError as e:
             logger.warning(f"pdfplumber failed: {e}")
             # fallback: return raw bytes placeholder
             return data.decode(errors="ignore")[:10000]
@@ -32,6 +32,7 @@ class PDFWorker:
                     try:
                         df = pd.DataFrame(tab[1:], columns=tab[0])
                         dfs.append(df)
-                    except Exception:
+                    except (ValueError, IndexError) as e:
+                        logger.warning(f"Error creating DataFrame: {e}")
                         pass
         return dfs
