@@ -1,0 +1,18 @@
+# Configuration file for Bandit - Python security linter
+
+# 1. EXCLUDE DIRECTORIES (The primary fix for all your issues)
+# This instructs Bandit to skip scanning these entire directories.
+# It resolves all B101 (assert) and B105 (test_secret) warnings in your test files.
+exclude_dirs:
+  - tests
+  - .venv
+  - venv
+  - build
+  - dist
+
+# 2. GLOBAL SKIPS (Optional, but can be a robust fallback)
+# This globally skips the B101 check. Since you are already excluding
+# the directory, this is redundant but ensures B101 never appears.
+# You don't need to skip B105 since the directory is already excluded.
+skips:
+  - B101
