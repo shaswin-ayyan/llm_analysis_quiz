@@ -86,7 +86,8 @@ class Orchestrator:
 
     @staticmethod
     def _convert_drive_download(raw_url: str) -> str:
-        if not raw_url: return raw_url
+        if not raw_url:
+            return raw_url
         match = re.match(r"https://drive\.google\.com/file/d/([^/]+)/", raw_url)
         if match:
             file_id = match.group(1)
@@ -94,11 +95,16 @@ class Orchestrator:
         return raw_url
 
     @staticmethod
-    def _looks_like_data_link(url: Optional[str], anchor_text: str, file_type: str) -> bool:
-        if not url: return False
+    def _looks_like_data_link(
+        url: Optional[str], anchor_text: str, file_type: str
+    ) -> bool:
+        if not url:
+            return False
         lower = url.lower()
-        if f".{file_type}" in lower: return True
-        if file_type in (anchor_text or "").lower(): return True
+        if f".{file_type}" in lower:
+            return True
+        if file_type in (anchor_text or "").lower():
+            return True
         return False
 
     async def handle_task(self, question_url: str, email: str, secret: str):
@@ -112,12 +118,17 @@ class Orchestrator:
 
             logger.info(f"[Orchestrator] Loading: {current_url}")
             html = await render_page_with_retries(current_url)
-            if not html: return {"error": "browser_failed"}
+            if not html:
+                return {"error": "browser_failed"}
 
-            (q_text, res_url, sub_url) = self.extract_question_and_resources(html, current_url)
+            (q_text, res_url, sub_url) = self.extract_question_and_resources(
+                html, current_url
+            )
 
-            if not q_text: return {"error": "no_question_text"}
-            if not sub_url: return {"error": "no_submit_url"}
+            if not q_text:
+                return {"error": "no_question_text"}
+            if not sub_url:
+                return {"error": "no_submit_url"}
             
             # Allow proceeding without CSV/PDF, but log warning
             if not res_url:
