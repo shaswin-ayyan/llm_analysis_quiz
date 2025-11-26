@@ -1,7 +1,6 @@
 import pandas as pd
 import aiohttp
 import pdfplumber
-import io
 import logging
 from io import StringIO, BytesIO
 from urllib.parse import urlparse
@@ -112,34 +111,39 @@ async def load_csv_tool(args, df):
                 html_df = normalize_dataframe(html_df)
                 if not html_df.empty:
                     return html_df
-        except Exception:
-            pass
+        except Exception as e:
+            logger.warning(f"Failed to read local file as HTML: {e}")
         raise RuntimeError(f"Failed to read local CSV '{file_path}': {e}")
 
 # ============================================================
 # CORRELATION TOOL
 # ============================================================
 async def correlation_tool(args, df):
-    if df is None: return "Error: No dataframe loaded."
+    if df is None:
+        return "Error: No dataframe loaded."
     x = args.get("column_x")
     y = args.get("column_y")
-    if not x or not y: return "Error: Missing columns."
+    if not x or not y:
+        return "Error: Missing columns."
     return float(df[x].corr(df[y]))
 
 # ============================================================
 # SUMMARY STATS TOOL
 # ============================================================
 async def summary_stats_tool(args, df):
-    if df is None: return "Error: No dataframe loaded."
+    if df is None:
+        return "Error: No dataframe loaded."
     col = args.get("column")
-    if col: return df[col].describe().to_dict()
+    if col:
+        return df[col].describe().to_dict()
     return df.describe().to_dict()
 
 # ============================================================
 # TOP GROUP BY TOOL
 # ============================================================
 async def top_group_by_tool(args, df):
-    if df is None: return "Error: No dataframe loaded."
+    if df is None:
+        return "Error: No dataframe loaded."
     by = args.get("group_by")
     col = args.get("value_col")
     n = args.get("n", 5)
@@ -149,7 +153,8 @@ async def top_group_by_tool(args, df):
 # FILTER TOOL
 # ============================================================
 async def filter_tool(args, df):
-    if df is None: return "Error: No dataframe loaded."
+    if df is None:
+        return "Error: No dataframe loaded."
     column = args.get("column")
     op = args.get("op")
     value = args.get("value")
