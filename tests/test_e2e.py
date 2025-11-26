@@ -54,7 +54,7 @@ def test_e2e_incorrect_answer(mock_run, client, mock_server):
         },
     )
     assert response.status_code == 200
-    assert response.json()["status"] == "wrong"
+    assert response.json()["status"] == "failed"
 
 
 @patch("app.orchestrator.render_page_with_retries")

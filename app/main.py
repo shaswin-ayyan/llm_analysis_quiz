@@ -10,9 +10,6 @@ from app.orchestrator import Orchestrator
 load_dotenv()
 logger = logging.getLogger("uvicorn.error")
 
-# expected secret set by you (from the Google form)
-EXPECTED_SECRET = os.getenv("QUIZ_SECRET", None)
-
 app = FastAPI(title="TDS LLM Analysis Quiz Endpoint")
 
 orchestrator = Orchestrator()
@@ -24,6 +21,14 @@ class SolvePayload(BaseModel):
     secret: str
 
 
+@app.get("/health")
+async def health():
+    """
+    Health check endpoint.
+    """
+    return {"status": "ok"}
+
+
 @app.post("/solve")
 async def solve(payload: SolvePayload, request: Request):
     """
@@ -33,8 +38,9 @@ async def solve(payload: SolvePayload, request: Request):
 
     # basic JSON validation handled by Pydantic
     # secret check
-    if EXPECTED_SECRET:
-        if payload.secret != EXPECTED_SECRET:
+    expected_secret = os.getenv("QUIZ_SECRET")
+    if expected_secret:
+        if payload.secret != expected_secret:
             logger.warning("Invalid secret provided")
             raise HTTPException(status_code=403, detail="Invalid secret")
     else:
