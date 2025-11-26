@@ -1,5 +1,6 @@
 # BUILD STAGE
-FROM python:3.10-slim AS build
+# UPDATED: Changed from 3.10 to 3.11 to support numpy>=2.3.0
+FROM python:3.11-slim AS build
 WORKDIR /app
 COPY requirements.txt .
 RUN apt-get update && apt-get install -y --no-install-recommends \
@@ -10,10 +11,14 @@ RUN pip install --no-cache-dir -r requirements.txt
 COPY . /app
 
 # RUNTIME STAGE
-FROM python:3.10-slim
+# UPDATED: Changed from 3.10 to 3.11
+FROM python:3.11-slim
 WORKDIR /app
-COPY --from=build /usr/local/lib/python3.10/site-packages /usr/local/lib/python3.10/site-packages
+
+# CRITICAL UPDATE: Changed path from /python3.10/ to /python3.11/
+COPY --from=build /usr/local/lib/python3.11/site-packages /usr/local/lib/python3.11/site-packages
 COPY --from=build /app /app
+
 # install playwright browsers
 RUN python -m playwright install chromium
 ENV PYTHONUNBUFFERED=1
