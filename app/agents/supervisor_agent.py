@@ -28,8 +28,18 @@ class SupervisorAgent:
         files = context.get("files", {})
         
         # Check FAST PATH (if answer is explicitly in text)
-        # Simple heuristic: if the question text contains "The answer is X", we might skip.
-        # But let's let the LLM decide in the first step.
+        # Regex for "answer is X" or "submit 'anything'"
+        fast_match = re.search(r"(?:answer|submit)\s+(?:is|:)?\s*['\"]?([\w\s]+)['\"]?", question, re.IGNORECASE)
+        if fast_match:
+            candidate = fast_match.group(1).strip()
+            if "anything" in candidate.lower():
+                logger.info("Fast Path: Detected 'anything' answer.")
+                return "anything you want"
+            # If it looks like a simple value, return it
+            # But be careful not to catch "The answer is to use python..."
+            if len(candidate) < 50 and "python" not in candidate.lower():
+                 logger.info(f"Fast Path: Detected simple answer '{candidate}'")
+                 return candidate
 
         # Add initial observation
         initial_obs = f"QUESTION: {question}\nFILES: {json.dumps(files, default=str)}"
