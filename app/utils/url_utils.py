@@ -1,6 +1,9 @@
 import re
+import logging
 from urllib.parse import urljoin
 from bs4 import BeautifulSoup
+
+logger = logging.getLogger(__name__)
 
 def extract_urls(text: str, base_url: str = None) -> list[str]:
     """
@@ -17,8 +20,8 @@ def extract_urls(text: str, base_url: str = None) -> list[str]:
             if base_url:
                 href = urljoin(base_url, href)
             urls.append(href)
-    except Exception:
-        pass
+    except Exception as e:
+        logger.warning(f"HTML parsing failed in extract_urls: {e}")
         
     # 2. Fallback/Additional: Regex for raw URLs in text
     # This regex is a simple one for demonstration; production might need more robust one

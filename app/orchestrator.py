@@ -77,7 +77,8 @@ class Orchestrator:
                         # Use Tier 1 Orchestrator
                         # We wrap in a shorter timeout to ensure we don't overrun the global timer
                         remaining_time = self.MAX_QUESTION_TIME - (time.time() - question_start_time) - 5
-                        if remaining_time < 10: remaining_time = 10
+                        if remaining_time < 10:
+                            remaining_time = 10
                         
                         final_answer = await asyncio.wait_for(
                             tier1_orchestrator.run(context),

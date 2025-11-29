@@ -2,7 +2,6 @@ import logging
 import json
 from app.config import settings
 from app.llm_client import chat_completion
-from app.agents.tools.definitions import scrape_url_tool, extract_urls_tool
 from app.agents.tier2_worker import worker_tier2
 
 logger = logging.getLogger(__name__)
@@ -90,7 +89,7 @@ class Tier1Orchestrator:
                 if match:
                     return json.loads(match.group(1))
             return json.loads(response)
-        except:
+        except Exception:
             return {"final_answer": response} # Fallback to treating string as answer
 
     def _find_model_indices(self, target_model: str):

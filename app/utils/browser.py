@@ -2,7 +2,7 @@ import logging
 import os
 import aiohttp
 import asyncio
-from playwright.async_api import async_playwright, Error as PlaywrightError
+from playwright.async_api import async_playwright
 from urllib.parse import urljoin, urlparse
 from bs4 import BeautifulSoup
 
@@ -181,7 +181,7 @@ async def render_page_with_retries(url: str, retries: int = 3) -> str:
                     except Exception as e:
                         if "Download is starting" in str(e):
                             logger.info(f"Playwright triggered download for {url}. Assuming file content.")
-                            return f"Error: URL triggered a download. Please use load_csv_metadata or similar if this is a file."
+                            return "Error: URL triggered a download. Please use load_csv_metadata or similar if this is a file."
                         raise e
 
                     await page.wait_for_timeout(2000)

@@ -76,9 +76,12 @@ class ExtractorAgent:
             api_url = f"https://generativelanguage.googleapis.com/v1beta/models/{model}:generateContent?key={settings.GEMINI_API_KEY}"
             
             mime_type = "audio/mp3"
-            if file_path.endswith(".wav"): mime_type = "audio/wav"
-            elif file_path.endswith(".ogg"): mime_type = "audio/ogg"
-            elif file_path.endswith(".opus"): mime_type = "audio/opus"
+            if file_path.endswith(".wav"):
+                mime_type = "audio/wav"
+            elif file_path.endswith(".ogg"):
+                mime_type = "audio/ogg"
+            elif file_path.endswith(".opus"):
+                mime_type = "audio/opus"
 
             payload = {
                 "contents": [{

@@ -1,6 +1,8 @@
 import asyncio
+import pytest
 from app.agents.tools import scrape_url_tool
 
+@pytest.mark.asyncio
 async def test_scrape():
     print("Testing scrape_url_tool...")
     # Use a reliable public URL for testing

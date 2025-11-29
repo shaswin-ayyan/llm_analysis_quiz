@@ -12,7 +12,7 @@ if not api_key:
 url = f"https://generativelanguage.googleapis.com/v1beta/models?key={api_key}"
 
 try:
-    response = requests.get(url)
+    response = requests.get(url, timeout=30)
     if response.status_code == 200:
         models = response.json().get("models", [])
         print(f"Found {len(models)} models:")

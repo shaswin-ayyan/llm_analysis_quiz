@@ -117,7 +117,7 @@ class Tier2Worker:
                 if match:
                     return json.loads(match.group(1))
             return json.loads(response)
-        except:
+        except Exception:
             return {"error": "Failed to parse JSON response"}
 
     def _find_model_indices(self, target_model: str):

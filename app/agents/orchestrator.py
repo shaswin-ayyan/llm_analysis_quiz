@@ -53,9 +53,7 @@ class QuizOrchestrator:
         Main handler called by the background task.
         """
         from app.agents.extractor_agent import extractor_agent
-        from app.utils.browser import browser_manager
         import aiohttp
-        import json
         
         logger.info(f"Starting quiz task for {email} at {url}")
         

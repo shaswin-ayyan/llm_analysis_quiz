@@ -1,6 +1,6 @@
 import pytest
 from fastapi.testclient import TestClient
-from unittest.mock import patch
+from unittest.mock import patch, AsyncMock
 import os
 
 
@@ -27,7 +27,7 @@ def test_solve_invalid_secret(client):
     assert response.json() == {"detail": "Invalid secret"}
 
 
-@patch("app.main.orchestrator.handle_task")
+@patch("app.main.orchestrator.handle_task", new_callable=AsyncMock)
 def test_solve_valid_secret(mock_handle_task, client):
     mock_handle_task.return_value = {"status": "completed", "answer": "Paris"}
     response = client.post(
@@ -39,4 +39,4 @@ def test_solve_valid_secret(mock_handle_task, client):
         },
     )
     assert response.status_code == 200
-    assert response.json() == {"status": "completed", "answer": "Paris"}
+    assert response.json() == {"status": "accepted", "message": "Task started in background"}

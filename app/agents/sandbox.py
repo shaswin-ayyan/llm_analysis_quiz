@@ -1,4 +1,3 @@
-import sys
 import io
 import contextlib
 import traceback
@@ -56,7 +55,7 @@ class PythonSandbox:
                 # We use a shared globals dictionary to persist state between executions if needed
                 # But for now, we might want a fresh state or persistent? 
                 # The prompt implies a REPL-like behavior ("Write next code"), so persistent state is better.
-                exec(code, self.globals)
+                exec(code, self.globals) # nosec B102
                 
                 # Try to get the last expression value if possible? 
                 # exec() doesn't return value. We rely on print() or explicit variable assignment.

@@ -7,7 +7,8 @@ from app.agents.tools.definitions import (
     python_execute,
     plot_to_base64,
     extract_urls_tool,
-    scrape_url_tool
+    scrape_url_tool,
+    sandbox
 )
 
 VALID_TOOLS = {
