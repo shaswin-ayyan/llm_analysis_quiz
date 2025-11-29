@@ -20,8 +20,8 @@ COPY --from=build /usr/local/lib/python3.11/site-packages /usr/local/lib/python3
 COPY --from=build /usr/local/bin /usr/local/bin
 COPY --from=build /app /app
 
-# install playwright browsers
-RUN python -m playwright install chromium
+# install playwright browsers and dependencies
+RUN python -m playwright install --with-deps chromium
 ENV PYTHONUNBUFFERED=1
 EXPOSE 8000
 CMD ["gunicorn", "-k", "uvicorn.workers.UvicornWorker", "app.main:app", "--bind", "0.0.0.0:8000", "--workers", "2", "--log-level", "info"]
