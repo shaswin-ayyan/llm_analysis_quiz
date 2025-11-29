@@ -1,55 +1,56 @@
-# app/main.py
 import os
 import logging
 from dotenv import load_dotenv
-from fastapi import FastAPI, HTTPException, Request
+from fastapi import FastAPI, HTTPException, Request, BackgroundTasks
 from pydantic import BaseModel
 
 from app.orchestrator import Orchestrator
 
 load_dotenv()
-logger = logging.getLogger("uvicorn.error")
 
-# expected secret set by you (from the Google form)
-EXPECTED_SECRET = os.getenv("QUIZ_SECRET", None)
+# Configure logging
+logging.basicConfig(
+    level=logging.INFO,
+    format="%(asctime)s - %(name)s - %(levelname)s - %(message)s",
+    handlers=[logging.StreamHandler()]
+)
+logger = logging.getLogger("uvicorn.error")
 
 app = FastAPI(title="TDS LLM Analysis Quiz Endpoint")
 
 orchestrator = Orchestrator()
-
 
 class SolvePayload(BaseModel):
     email: str
     url: str
     secret: str
 
+@app.get("/health")
+async def health():
+    return {"status": "ok"}
 
 @app.post("/solve")
-async def solve(payload: SolvePayload, request: Request):
+async def solve(payload: SolvePayload, background_tasks: BackgroundTasks):
     """
     Endpoint the TDS system calls.
-    Expects JSON body: { "email": "...", "url": "...", "secret": "..." }
+    Returns 200 OK immediately and processes in background.
     """
-
-    # basic JSON validation handled by Pydantic
-    # secret check
-    if EXPECTED_SECRET:
-        if payload.secret != EXPECTED_SECRET:
+    # Secret check
+    expected_secret = os.getenv("QUIZ_SECRET")
+    if expected_secret:
+        if payload.secret != expected_secret:
             logger.warning("Invalid secret provided")
             raise HTTPException(status_code=403, detail="Invalid secret")
     else:
-        # If no secret configured, warn but allow (useful in local dev)
-        logger.warning(
-            "No QUIZ_SECRET configured in environment — skipping secret check"
-        )
+        logger.warning("No QUIZ_SECRET configured — skipping check")
 
-    # call orchestrator (note ordering: url, email, secret)
-    try:
-        result = await orchestrator.handle_task(
-            payload.url, payload.email, payload.secret
-        )
-    except Exception as e:
-        logger.exception("Error while handling task")
-        raise HTTPException(status_code=500, detail=str(e))
-
-    return result
+    # Add to background tasks
+    background_tasks.add_task(
+        orchestrator.handle_task,
+        payload.url,
+        payload.email,
+        payload.secret
+    )
+    
+    logger.info(f"Accepted task for {payload.email}")
+    return {"status": "accepted", "message": "Task started in background"}

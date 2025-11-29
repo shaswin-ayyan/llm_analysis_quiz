@@ -1,90 +1,86 @@
-# Project 2 — LLM Analysis Quiz-inator 3000
+# LLM Analysis Quiz Solver
 
-Welcome to the future of quiz-solving! This project is a FastAPI-based web application that uses the power of LLMs to solve data science quizzes. It's like having a tiny data scientist living in your computer, but without the need for coffee and snacks.
+## Overview
+
+The **LLM Analysis Quiz Solver** is an advanced, automated system designed to solve complex data analysis quizzes using Large Language Models (LLMs). It leverages a multi-agent architecture to extract questions, analyze data (CSV, JSON, etc.), write and execute Python code, and submit answers via a REST API.
+
+The system is built for robustness and efficiency, featuring strict time management (180s per question), automatic retries with feedback loops, and self-cleaning workspace management.
 
 ## System Design
 
-The application is designed with a simple and modular architecture, making it easy to understand and extend. Here's a high-level overview of how it works:
+The architecture follows a hierarchical multi-agent pattern:
 
-```
-                  +-----------------+
-                  |                 |
-                  |  FastAPI Server |
-                  |                 |
-                  +-------+---------+
-                          |
-                          | (POST /solve)
-                          |
-                  +-------v---------+
-                  |                 |
-                  |  Orchestrator   |
-                  |                 |
-                  +-------+---------+
-                          |
-                          | (Run, young padawan!)
-                          |
-                  +-------v---------+
-                  |                 |
-                  |    Data Agent   |
-                  |                 |
-                  +-----------------+
-```
+### 1. Orchestrator (`app/orchestrator.py`)
+The central nervous system of the application.
+-   **Responsibility**: Manages the high-level quiz loop.
+-   **Time Management**: Enforces a strict **180-second (3-minute)** timeout per question.
+-   **Flow Control**: Handles extraction, reasoning, submission, and navigation to the next question.
+-   **Error Handling**: Manages retries (up to 3 attempts) and decides when to skip a question if the time limit is breached.
+-   **Cleanup**: Automatically deletes the `workspace` directory and all temporary files upon completion to save storage.
 
-### Components
+### 2. Extractor Agent (`app/agents/extractor_agent.py`)
+-   **Responsibility**: Fetches the quiz URL, parses the HTML, and extracts the question text, data file links, and submission endpoints.
+-   **Output**: A structured context dictionary containing all necessary metadata for the reasoning agents.
 
-*   **FastAPI Server (`app/main.py`):** This is the entry point of the application. It exposes a single endpoint, `/solve`, that receives the quiz URL and other details. It's the bouncer of our little club, checking for secrets and making sure everyone behaves.
-*   **Orchestrator (`app/orchestrator.py`):** This is the brains of the operation. It takes the quiz URL, renders the page using Playwright, and extracts the question, CSV URL, and submit URL. It then passes the question to the `DataAgent` to get the answer and submits it to the quiz server. It's the project manager, making sure everyone is doing their job and that the project is on track.
-*   **Data Agent (`app/agents/data_agent.py`):** This is where the magic happens. The `DataAgent` uses an LLM to analyze the question and the provided CSV data to come up with an answer. It's our resident genius, the one who actually knows what they're doing.
+### 3. Tier 1 Orchestrator (`app/agents/tier1_orchestrator.py`)
+-   **Responsibility**: The high-level reasoning agent. It plans the solution steps but delegates the actual coding and execution to the Tier 2 Worker.
+-   **Role**: Acts as the "Project Manager" for the solution.
 
-## Setup
+### 4. Tier 2 Worker (`app/agents/workers/tier2_worker.py`)
+-   **Responsibility**: The specialized "Data Scientist" agent.
+-   **Capabilities**: Writes Python code, executes it using the `run_programming_task` tool, analyzes the output, and formulates the final answer.
+-   **Safety**: Runs code in a controlled environment.
 
-To run the application locally, you'll need to have Python 3.10+ and Docker installed.
+## Workflow
 
-1.  **Clone the repository:**
+1.  **Initialization**: The system starts with a seed URL, email, and API secret.
+2.  **Extraction**: The `Extractor Agent` scrapes the page to find the question and data links.
+3.  **Reasoning Loop**:
+    -   The `Orchestrator` starts a timer (180s limit).
+    -   `Tier 1` analyzes the request and delegates to `Tier 2`.
+    -   `Tier 2` writes code to download data, process it (using pandas, etc.), and compute the answer.
+    -   The code is executed, and results are returned to the agents.
+4.  **Submission**:
+    -   The computed answer is submitted to the quiz API.
+    -   **Success**: If correct, the system extracts the `next_url` and proceeds immediately.
+    -   **Failure**: If incorrect, the system receives feedback and retries (up to 3 times).
+5.  **Timeout Handling**:
+    -   If the process exceeds **180 seconds**, the system attempts to gracefully fail.
+    -   If a `next_url` was discovered in a previous failed attempt, the system skips the current question and moves forward to keep the exam going.
+6.  **Cleanup**:
+    -   Once the quiz is finished (or a terminal error occurs), the `Orchestrator` automatically deletes the `workspace` folder, removing all downloaded datasets and temporary scripts.
 
+## Usage
+
+### Prerequisites
+-   Python 3.10+
+-   Gemini API Key (or compatible LLM key)
+
+### Installation
+
+1.  Clone the repository.
+2.  Install dependencies:
     ```bash
-    git clone https://github.com/your-username/your-repo.git
-    cd your-repo
+    pip install -r requirements.txt
+    ```
+3.  Set up environment variables (create a `.env` file):
+    ```env
+    GEMINI_API_KEY=your_api_key_here
     ```
 
-2.  **Create a `.env` file:**
+### Running the Solver
 
-    ```bash
-    cp .env.example .env
-    ```
-
-3.  **Update the `.env` file with your secret:**
-
-    ```bash
-    QUIZ_SECRET=your-secret
-    ```
-
-4.  **Build and run the Docker container:**
-
-    ```bash
-    docker-compose up -d
-    ```
-
-5.  **Test the application:**
-
-    ```bash
-    curl -X POST http://localhost:8000/solve -H "Content-Type: application/json" -d '{
-      "email": "test@example.com",
-      "secret": "your-secret",
-      "url": "https://tds-llm-analysis.s-anand.net/demo"
-    }'
-    ```
-
-## Running the Tests
-
-To run the tests, you'll need to have the dependencies installed. You can do this by running:
+Execute the main application (assuming `main.py` or similar entry point):
 
 ```bash
-pip install -r requirements.txt
+python -m app.main
 ```
 
-Then, you can run the tests using `pytest`:
+*Note: Ensure you have the correct starting URL and credentials configured in your launch configuration or passed as arguments.*
 
-```bash
-pytest
-```
+## Key Features
+
+-   **Strict Time Limits**: Ensures no single question blocks the entire exam. Hard limit of 3 minutes per question.
+-   **Auto-Cleanup**: Keeps your disk clean by removing gigabytes of potential data files after the run.
+-   **Resilient Logic**: Can recover from incorrect answers and navigate through the quiz even if some questions are missed (provided a next link is available).
+-   **Multi-Agent Reasoning**: Separates planning from execution for higher accuracy.

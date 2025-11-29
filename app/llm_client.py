@@ -11,27 +11,26 @@ load_dotenv()
 ALL_PROVIDERS = []
 
 # ======================
-# GEMINI PROVIDER
+# GEMINI PROVIDER (Direct)
 # ======================
 if settings.GEMINI_API_KEY:
     GEMINI_PROVIDER = {
-        "name": "Gemini",
+        "name": "Gemini (Direct)",
         "type": "gemini",
         "url": "https://generativelanguage.googleapis.com/v1beta/models",
         "api_key": settings.GEMINI_API_KEY,
-        "models": [settings.GEMINI_MODEL],
+        "models": settings.GEMINI_MODELS,
     }
     ALL_PROVIDERS.append(GEMINI_PROVIDER)
 
 # ======================
-# AIPipe Provider
+# AIPipe Provider (OpenAI Compatible)
 # ======================
 PRIMARY_MODELS = []
 if settings.LLM_CHAT_MODEL:
     PRIMARY_MODELS.append(settings.LLM_CHAT_MODEL)
-for m in settings.LLM_FALLBACK_MODELS:
-    if m not in PRIMARY_MODELS:
-        PRIMARY_MODELS.append(m)
+# Add Orchestrator Model
+PRIMARY_MODELS.append(settings.ORCHESTRATOR_MODEL)
 
 AIPIPE_PROVIDER = {
     "name": "AIPipe",
@@ -43,17 +42,25 @@ AIPIPE_PROVIDER = {
 ALL_PROVIDERS.append(AIPIPE_PROVIDER)
 
 # ======================
-# OpenRouter Provider
+# AIPipe Gemini Provider
 # ======================
-if settings.OPENROUTER_API_KEY:
-    OPENROUTER_PROVIDER = {
-        "name": "OpenRouter",
-        "type": "openrouter",
-        "url": "https://openrouter.ai/api/v1/chat/completions",
-        "api_key": settings.OPENROUTER_API_KEY,
-        "models": settings.OPENROUTER_MODELS,
+# The user specified: https://aipipe.org/geminiv1beta/models/gemini-2.5-flash-lite:generateContent
+# This is a Google AI Studio compatible endpoint.
+# We will treat it as a "gemini" type provider but with a custom URL.
+
+if settings.GEMINI_API_KEY:
+    AIPIPE_GEMINI_PROVIDER = {
+        "name": "AIPipe Gemini",
+        "type": "gemini",
+        # The client code appends ":generateContent", so we provide the base up to the model?
+        # Standard gemini url is: https://generativelanguage.googleapis.com/v1beta/models
+        # AI Pipe url is: https://aipipe.org/geminiv1beta/models
+        # So we set the url to the base.
+        "url": "https://aipipe.org/geminiv1beta/models", 
+        "api_key": settings.GEMINI_API_KEY,
+        "models": [settings.WORKER_MODEL],
     }
-    ALL_PROVIDERS.append(OPENROUTER_PROVIDER)
+    ALL_PROVIDERS.append(AIPIPE_GEMINI_PROVIDER)
 
 
 # ***************************************************************
@@ -105,7 +112,12 @@ async def chat_completion(messages, provider_index=0, model_index=0, timeout=20)
         # GEMINI
         # ==============================
         if provider["type"] == "gemini":
-            headers["x-goog-api-key"] = provider["api_key"]
+            # AI Pipe requires Authorization header for native keys
+            if "aipipe.org" in provider["url"]:
+                headers["Authorization"] = f"Bearer {provider['api_key']}"
+            else:
+                headers["x-goog-api-key"] = provider["api_key"]
+                
             url = f"{provider['url']}/{model}:generateContent"
             gemini_messages = convert_openai_messages_to_gemini(messages)
             payload = {
@@ -142,6 +154,9 @@ async def chat_completion(messages, provider_index=0, model_index=0, timeout=20)
 
         # Gemini parsing
         if provider["type"] == "gemini":
+            if not data.get("candidates") or not data["candidates"][0].get("content") or not data["candidates"][0]["content"].get("parts"):
+                print(f"[ERROR {provider['name']}] {model}: Empty/Invalid response: {data}")
+                return await chat_completion(messages, provider_index, model_index + 1, timeout)
             content = data["candidates"][0]["content"]["parts"][0]["text"]
 
         # OpenAI-style parsing (AIPipe, OpenRouter)

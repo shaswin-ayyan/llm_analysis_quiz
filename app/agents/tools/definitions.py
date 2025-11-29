@@ -6,6 +6,9 @@ import base64
 import matplotlib.pyplot as plt
 from bs4 import BeautifulSoup
 from app.agents.sandbox import PythonSandbox
+from app.utils.browser import render_page_with_retries
+from app.utils.url_utils import extract_urls
+from app.config import settings
 
 logger = logging.getLogger(__name__)
 
@@ -212,7 +215,6 @@ async def extract_urls_tool(args, df=None):
       - text: str
       - base_url: str (optional)
     """
-    from app.utils.url_utils import extract_urls
     text = args.get("text")
     base_url = args.get("base_url")
     if not text:
@@ -227,13 +229,21 @@ async def scrape_url_tool(args, df=None):
     args:
       - url: str
     """
-    from app.utils.browser import render_page_with_retries
     url = args.get("url")
     if not url:
         return {"error": "url argument is required."}
     
     try:
-        html = await render_page_with_retries(url)
+        # Use AI Pipe Proxy as requested
+        proxy_base = settings.AIPIPE_PROXY_URL.rstrip("/")
+        if not url.startswith(proxy_base):
+            # Ensure we don't double proxy if already proxied
+            target_url = f"{proxy_base}/{url}"
+        else:
+            target_url = url
+            
+        logger.info(f"Scraping via Proxy: {target_url}")
+        html = await render_page_with_retries(target_url)
         if not html:
             return {"error": "Failed to load page (empty content)."}
         
@@ -246,16 +256,3 @@ async def scrape_url_tool(args, df=None):
     except Exception as e:
         logger.error(f"Scrape tool failed: {e}")
         return {"error": f"Error scraping URL: {str(e)}"}
-
-# Tool Registry
-VALID_TOOLS = {
-    "load_csv_metadata": load_csv_metadata,
-    "load_excel_metadata": load_excel_metadata,
-    "load_json_metadata": load_json_metadata,
-    "load_pdf": load_pdf,
-    "load_html_tables": load_html_tables,
-    "python_execute": python_execute,
-    "plot_to_base64": plot_to_base64,
-    "extract_urls": extract_urls_tool,
-    "scrape_url": scrape_url_tool,
-}
