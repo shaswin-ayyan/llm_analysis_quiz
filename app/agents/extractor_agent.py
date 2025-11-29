@@ -60,7 +60,8 @@ class ExtractorAgent:
             "page_text": data["page_text"],
             "submit_url": submit_url,
             "files": data["files"],
-            "links": data["links"]
+            "links": data["links"],
+            "workspace_dir": workspace_dir
         }
 
     def _find_submit_url(self, html: str, links: list, current_url: str) -> str:

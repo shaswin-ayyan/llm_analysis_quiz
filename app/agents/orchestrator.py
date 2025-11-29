@@ -28,10 +28,23 @@ class Orchestrator:
             while True:
                 question_start_time = time.time()
                 logger.info(f"Processing Quiz URL: {current_url}")
+                
+                # Track question-specific workspace for cleanup
+                question_workspace = None
 
                 # 1. Extraction
                 try:
                     context = await extractor_agent.extract(current_url, base_workspace)
+                    # Extract the specific workspace dir from the context or infer it
+                    # ExtractorAgent creates a subdir in base_workspace/files/UUID
+                    # We can find it from the file paths or update Extractor to return it.
+                    # For now, let's just clean up 'files' inside base_workspace periodically if needed,
+                    # or rely on the fact that we clean the whole thing at the end.
+                    # BUT user asked: "once a question is solved just remove them from workspace"
+                    # So we should try to identify the folder.
+                    # Let's assume Extractor returns the workspace_dir in context or we can infer.
+                    # Update: I will update ExtractorAgent to return 'workspace_dir'
+                    question_workspace = context.get("workspace_dir")
                 except Exception as e:
                     logger.error(f"Extraction failed: {e}")
                     return {"error": "extraction_failed"}
@@ -43,6 +56,7 @@ class Orchestrator:
                 # 2. Reasoning (Retry Loop)
                 final_answer = None
                 next_url_candidate = None 
+                solved = False
 
                 for attempt in range(self.MAX_RETRIES):
                     elapsed = time.time() - question_start_time
@@ -94,10 +108,11 @@ class Orchestrator:
                         
                         if response and response.get("correct"):
                             logger.info("Correct answer!")
+                            solved = True
                             next_url = response.get("url") or response.get("next_url")
                             if next_url:
                                 current_url = next_url # Move to next quiz
-                                break # Break retry loop, continue main loop (next question)
+                                break # Break retry loop
                             else:
                                 return {"status": "completed", "final_message": "No next URL provided."}
                         else:
@@ -109,22 +124,42 @@ class Orchestrator:
                             if next_url:
                                 next_url_candidate = next_url
                             
-                            if (time.time() - question_start_time) > 150 and next_url:
-                                logger.warning("Near timeout and incorrect answer. Skipping to next URL.")
+                            # DECISION LOGIC: Retry or Skip?
+                            elapsed_now = time.time() - question_start_time
+                            remaining = self.MAX_QUESTION_TIME - elapsed_now
+                            
+                            # If we have a next URL and time is tight (e.g. < 45s left), skip.
+                            # Or if user wants us to decide "if there is enough time to retry".
+                            # Let's say we need at least 45s to retry meaningfully.
+                            if next_url and remaining < 45:
+                                logger.warning(f"Only {remaining:.1f}s left. Skipping to next URL.")
                                 current_url = next_url
                                 break
+                            
+                            # Otherwise continue loop to retry
                     
                 else:
+                    # Loop finished without break (max retries exhausted)
                     logger.error("Max retries exhausted for this question.")
                     if next_url_candidate:
                         logger.info("Moving to next URL after retries exhausted.")
                         current_url = next_url_candidate
                     else:
                         return {"error": "max_retries_exhausted"}
+
+                # Cleanup per question
+                if question_workspace and os.path.exists(question_workspace):
+                    try:
+                        shutil.rmtree(question_workspace)
+                        logger.info(f"Cleaned up question workspace: {question_workspace}")
+                    except Exception as e:
+                        logger.error(f"Failed to clean up question workspace: {e}")
+
         finally:
+            # Cleanup global workspace at the end of the entire quiz
             if os.path.exists(base_workspace):
                 try:
                     shutil.rmtree(base_workspace)
-                    logger.info(f"Cleaned up workspace: {base_workspace}")
+                    logger.info(f"Cleaned up global workspace: {base_workspace}")
                 except Exception as e:
-                    logger.error(f"Failed to clean up workspace: {e}")
+                    logger.error(f"Failed to clean up global workspace: {e}")
