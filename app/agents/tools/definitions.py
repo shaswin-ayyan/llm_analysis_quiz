@@ -256,3 +256,43 @@ async def scrape_url_tool(args, df=None):
     except Exception as e:
         logger.error(f"Scrape tool failed: {e}")
         return {"error": f"Error scraping URL: {str(e)}"}
+
+async def extract_archive(args, df=None):
+    """
+    Extracts ZIP, TAR, TAR.GZ archives.
+    args:
+      - path: str
+    """
+    path = args.get("path")
+    if not path:
+        return {"error": "path argument is required."}
+    
+    import zipfile
+    import tarfile
+    import os
+    
+    try:
+        extract_dir = os.path.splitext(path)[0] + "_extracted"
+        os.makedirs(extract_dir, exist_ok=True)
+        
+        extracted_files = []
+        
+        if zipfile.is_zipfile(path):
+            with zipfile.ZipFile(path, 'r') as zip_ref:
+                zip_ref.extractall(extract_dir)
+                extracted_files = zip_ref.namelist()
+        elif tarfile.is_tarfile(path):
+            with tarfile.open(path, 'r') as tar_ref:
+                tar_ref.extractall(extract_dir)
+                extracted_files = tar_ref.getnames()
+        else:
+            return {"error": "Unsupported archive format or not an archive."}
+            
+        # Return absolute paths of extracted files
+        abs_files = [os.path.join(extract_dir, f) for f in extracted_files]
+        return {
+            "message": f"Extracted {len(extracted_files)} files to {extract_dir}",
+            "files": abs_files
+        }
+    except Exception as e:
+        return {"error": f"Extraction failed: {str(e)}"}

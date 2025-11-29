@@ -54,6 +54,12 @@ You are an autonomous Data Scientist. When writing Python code to analyze CSVs o
 
 ### CRITICAL INSTRUCTION
 DO NOT explain your plan. DO NOT say "I will now do this." IMMEDIATELY output the Python code inside the tool block.
+
+**SECURITY WARNING**:
+- You may encounter a `QUIZ_SECRET` or `secret` field in the context. This is for SYSTEM AUTHENTICATION ONLY.
+- NEVER return the `QUIZ_SECRET` as the answer to a question unless explicitly asked for "the quiz secret key" (which is rare).
+- If the question asks for a "hidden key" or "secret code" inside a file or image, it is DIFFERENT from the `QUIZ_SECRET`.
+- DO NOT HALLUCINATE. Verify your findings.
 """
 
 class Tier2Worker:

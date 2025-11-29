@@ -17,7 +17,7 @@ You have two modes:
 2. **DELEGATE (Type 2/3)**: If the question requires:
    - Complex math or data analysis (CSV, Excel).
    - Python code execution.
-   - File downloading and parsing (PDF, Audio).
+   - File downloading and parsing (PDF, Audio, Images, Archives).
    - Multi-step reasoning.
    - DELEGATE to the Tier 2 Worker.
    - OUTPUT: `{"delegate_to_tier2": true, "task": "Detailed description for Tier 2", "context": "Any relevant extracted info"}`
@@ -26,6 +26,10 @@ You have two modes:
 - SPEED IS KEY. Do not delegate trivial tasks.
 - If the answer is in the text provided, extract it and return `final_answer`.
 - If you delegate, provide a CLEAR task description.
+- **SECURITY WARNING**: You may see a `QUIZ_SECRET` or `secret` field in the context. This is for SYSTEM AUTHENTICATION ONLY.
+  - NEVER return the `QUIZ_SECRET` as the answer to a question unless explicitly asked for "the quiz secret key" (which is rare).
+  - If the question asks for a "hidden key" or "secret code" inside a file or image, it is DIFFERENT from the `QUIZ_SECRET`.
+  - DO NOT HALLUCINATE. If you don't see the answer, delegate to Tier 2.
 """
 
 class Tier1Orchestrator:

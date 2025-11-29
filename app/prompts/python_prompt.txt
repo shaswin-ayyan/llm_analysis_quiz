@@ -1,1 +1,0 @@
-Execute Python code. Return JSON: {"ok": bool, "stdout": str, "result": str}. No reasoning.

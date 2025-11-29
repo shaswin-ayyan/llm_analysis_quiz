@@ -24,43 +24,47 @@ if settings.GEMINI_API_KEY:
     ALL_PROVIDERS.append(GEMINI_PROVIDER)
 
 # ======================
-# AIPipe Provider (OpenAI Compatible)
+# OpenRouter Provider
 # ======================
-PRIMARY_MODELS = []
-if settings.LLM_CHAT_MODEL:
-    PRIMARY_MODELS.append(settings.LLM_CHAT_MODEL)
-# Add Orchestrator Model
-PRIMARY_MODELS.append(settings.ORCHESTRATOR_MODEL)
+# Explicitly define the list of models to ensure correct order for fallback logic.
+# Order: 
+# 1. Orchestrator Primary (Gemma 3)
+# 2. Orchestrator Fallback (Tongyi)
+# 3. Worker Primary (Gemini 2.5 Flash Lite)
+# 4. Worker Fallback 1 (Gemini 2.0 Flash)
+# 5. Worker Fallback 2 (Llama 3.3 70B)
 
-AIPIPE_PROVIDER = {
-    "name": "AIPipe",
-    "type": "aipipe",
+OPENROUTER_MODELS = [
+    settings.ORCHESTRATOR_MODEL,           # google/gemma-3-27b-it
+    "google/gemini-2.0-flash-lite-preview-02-05", # Fallback for Orchestrator (Multimodal)
+    settings.WORKER_MODEL,                 # alibaba/tongyi-deepresearch-30b-a3b
+    settings.AUDIO_MODEL,                  # Audio Transcription
+    "google/gemini-2.0-flash-001",         # Fallback for Worker
+    "meta-llama/llama-3.3-70b-instruct",   # Deep fallback
+]
+
+OPENROUTER_PROVIDER = {
+    "name": "OpenRouter",
+    "type": "openrouter",
     "url": settings.OPENAI_BASE_URL.rstrip("/") + "/chat/completions",
-    "api_key": settings.OPENAI_API_KEY,
-    "models": PRIMARY_MODELS,
+    "api_key": settings.OPENROUTER_API_KEY or settings.OPENAI_API_KEY,
+    "models": OPENROUTER_MODELS,
 }
-ALL_PROVIDERS.append(AIPIPE_PROVIDER)
+ALL_PROVIDERS.append(OPENROUTER_PROVIDER)
 
 # ======================
-# AIPipe Gemini Provider
+# AIPipe Gemini Provider (Disabled)
 # ======================
-# The user specified: https://aipipe.org/geminiv1beta/models/gemini-2.5-flash-lite:generateContent
-# This is a Google AI Studio compatible endpoint.
-# We will treat it as a "gemini" type provider but with a custom URL.
-
-if settings.GEMINI_API_KEY:
-    AIPIPE_GEMINI_PROVIDER = {
-        "name": "AIPipe Gemini",
-        "type": "gemini",
-        # The client code appends ":generateContent", so we provide the base up to the model?
-        # Standard gemini url is: https://generativelanguage.googleapis.com/v1beta/models
-        # AI Pipe url is: https://aipipe.org/geminiv1beta/models
-        # So we set the url to the base.
-        "url": "https://aipipe.org/geminiv1beta/models", 
-        "api_key": settings.GEMINI_API_KEY,
-        "models": [settings.WORKER_MODEL],
-    }
-    ALL_PROVIDERS.append(AIPIPE_GEMINI_PROVIDER)
+# User requested to switch to OpenRouter for worker as well.
+# if settings.GEMINI_API_KEY:
+#     AIPIPE_GEMINI_PROVIDER = {
+#         "name": "AIPipe Gemini",
+#         "type": "gemini",
+#         "url": "https://aipipe.org/geminiv1beta/models", 
+#         "api_key": settings.GEMINI_API_KEY,
+#         "models": [settings.WORKER_MODEL],
+#     }
+#     ALL_PROVIDERS.append(AIPIPE_GEMINI_PROVIDER)
 
 
 # ***************************************************************

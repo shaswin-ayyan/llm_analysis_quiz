@@ -1,1 +1,0 @@
-Transcribe audio to text verbatim. No commentary. No markdown.

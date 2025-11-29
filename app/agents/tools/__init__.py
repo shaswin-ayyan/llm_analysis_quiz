@@ -8,6 +8,7 @@ from app.agents.tools.definitions import (
     plot_to_base64,
     extract_urls_tool,
     scrape_url_tool,
+    extract_archive,
     sandbox
 )
 
@@ -21,4 +22,5 @@ VALID_TOOLS = {
     "plot_to_base64": plot_to_base64,
     "extract_urls": extract_urls_tool,
     "scrape_url": scrape_url_tool,
+    "extract_archive": extract_archive,
 }

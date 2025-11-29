@@ -18,31 +18,24 @@ class Settings(BaseSettings):
     )
 
     # ------------------------
-    # AIPipe / OpenAI-compatible
+    # OpenRouter / OpenAI-compatible
     # ------------------------
-    OPENAI_BASE_URL: str = "https://aipipe.org/openai/v1"
+    OPENAI_BASE_URL: str = "https://openrouter.ai/api/v1"
     OPENAI_API_KEY: str | None = None
+    OPENROUTER_API_KEY: str | None = None
     
-    # AI Pipe Proxy
+    # AI Pipe Proxy (Optional/Legacy)
     AIPIPE_PROXY_URL: str = "https://aipipe.org/proxy"
 
-    LLM_CHAT_MODEL: str = "gpt-4.1-nano"
+    LLM_CHAT_MODEL: str = "google/gemma-3-27b-it"
     
     # Model Constants
-    # Tier 1: Orchestrator (Speed)
-    ORCHESTRATOR_MODEL: str = "gpt-4.1-nano"
+    # Tier 1: Orchestrator (Speed & Multimodal)
+    ORCHESTRATOR_MODEL: str = "google/gemma-3-27b-it"
     # Tier 2: Worker (Deep Analysis)
-    WORKER_MODEL: str = "gemini-2.0-flash-lite"
-
-    # ------------------------
-    # OpenRouter
-    # ------------------------
-    OPENROUTER_API_KEY: str | None = None
-    OPENROUTER_BASE_URL: str = "https://openrouter.ai/api/v1"
-    
-    # Model Constants
-    SUPERVISOR_MODEL: str = "google/gemma-3-27b-it"
-    AUDIO_WORKER_MODEL: str = "google/gemini-2.0-flash-lite-001"
+    WORKER_MODEL: str = "alibaba/tongyi-deepresearch-30b-a3b"
+    # Audio Transcription
+    AUDIO_MODEL: str = "google/gemini-2.0-flash-lite-preview-02-05"
 
     LOG_LEVEL: str = "INFO"
 

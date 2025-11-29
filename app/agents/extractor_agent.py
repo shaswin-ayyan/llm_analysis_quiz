@@ -1,9 +1,11 @@
 import logging
 import os
 import uuid
+import base64
+import aiohttp
 import re
 from app.utils.browser import browser_manager
-from app.agents.worker_audio import transcribe_audio
+from app.config import settings
 
 logger = logging.getLogger(__name__)
 
@@ -31,38 +33,127 @@ class ExtractorAgent:
         data = await browser_manager.extract_page_data(url, workspace_dir)
         
         # 2. Audio Transcription
-        # We delegate this to the Supervisor loop now, OR we can do it here.
-        # The prompt says "Audio Worker transcribes only".
-        # The Supervisor logic I wrote checks for audio files and calls transcribe_audio.
-        # So we can skip it here to avoid double work, OR keep it here for "extraction".
-        # The prompt says "Supervisor (Gemma 27B) ... Chooses tools ... Audio worker transcribes".
-        # So the Supervisor should call the audio worker.
-        # However, the ExtractorAgent is "Scrapes webpage, downloads files, extracts text".
-        # If we remove it here, the "question text" might be missing if it's only in audio.
-        # Let's keep it here but use the new worker, so the Supervisor gets the full text immediately.
-        
         audio_transcript = ""
         if data["files"]["audio"]:
             for audio_path in data["files"]["audio"]:
                 logger.info(f"Transcribing audio: {audio_path}")
-                transcript = await transcribe_audio(audio_path)
+                transcript = await self._transcribe_audio(audio_path)
                 if transcript:
                     audio_transcript += f"\n[Audio Transcript]: {transcript}\n"
         
         # 3. Identify Question
+        # The question is usually in the text or audio.
+        # We combine them.
         full_text = data["page_text"] + "\n" + audio_transcript
         
         # 4. Identify Submit URL
+        # We look for forms or links with "submit"
         submit_url = self._find_submit_url(data["html_content"], data["links"], url)
         
         return {
-            "question_text": full_text.strip(),
+            "question_text": full_text.strip(), # The reasoning agent will parse this
             "page_text": data["page_text"],
             "submit_url": submit_url,
             "files": data["files"],
-            "links": data["links"],
-            "workspace_dir": workspace_dir
+            "links": data["links"]
         }
+
+    async def _transcribe_audio(self, file_path: str) -> str:
+        """
+        Transcribes audio using Gemini (Direct or OpenRouter).
+        """
+        try:
+            with open(file_path, "rb") as f:
+                audio_data = f.read()
+            
+            b64_audio = base64.b64encode(audio_data).decode("utf-8")
+            
+            mime_type = "audio/mp3"
+            if file_path.endswith(".wav"):
+                mime_type = "audio/wav"
+            elif file_path.endswith(".ogg"):
+                mime_type = "audio/ogg"
+            elif file_path.endswith(".opus"):
+                mime_type = "audio/opus"
+
+            # 1. Try Direct Google API if key exists
+            if settings.GEMINI_API_KEY:
+                # Use the configured AUDIO_MODEL (strip 'google/' prefix for direct API if needed, 
+                # but usually 'models/gemini-...' works. OpenRouter uses 'google/gemini-...')
+                # Google API expects 'gemini-2.0-flash' etc.
+                # settings.AUDIO_MODEL is 'google/gemini-2.0-flash-lite-preview-02-05'
+                # We need to extract the model ID.
+                model_id = settings.AUDIO_MODEL.replace("google/", "")
+                
+                api_url = f"https://generativelanguage.googleapis.com/v1beta/models/{model_id}:generateContent?key={settings.GEMINI_API_KEY}"
+                
+                payload = {
+                    "contents": [{
+                        "parts": [
+                            {"text": "Transcribe this audio file exactly."},
+                            {
+                                "inline_data": {
+                                    "mime_type": mime_type,
+                                    "data": b64_audio
+                                }
+                            }
+                        ]
+                    }]
+                }
+                
+                async with aiohttp.ClientSession() as session:
+                    async with session.post(api_url, json=payload) as resp:
+                        if resp.status == 200:
+                            result = await resp.json()
+                            return result["candidates"][0]["content"]["parts"][0]["text"]
+                        else:
+                            logger.warning(f"Gemini Direct transcription failed: {resp.status}. Trying OpenRouter...")
+
+            # 2. Try OpenRouter if Direct failed or key missing
+            if settings.OPENROUTER_API_KEY:
+                from app.llm_client import chat_completion, ALL_PROVIDERS
+                
+                # Find index for OpenRouter and AUDIO_MODEL
+                provider_idx = -1
+                model_idx = -1
+                for p_i, provider in enumerate(ALL_PROVIDERS):
+                    if provider["type"] == "openrouter":
+                        provider_idx = p_i
+                        for m_i, model in enumerate(provider["models"]):
+                            if model == settings.AUDIO_MODEL:
+                                model_idx = m_i
+                                break
+                        break
+                
+                if provider_idx != -1 and model_idx != -1:
+                    # Construct multimodal message for OpenRouter
+                    # Note: OpenRouter support for audio via 'image_url' or custom fields varies.
+                    # We will try the standard OpenAI multimodal format (image_url) as a fallback mechanism,
+                    # hoping the provider maps it.
+                    messages = [
+                        {
+                            "role": "user",
+                            "content": [
+                                {"type": "text", "text": "Transcribe this audio file exactly."},
+                                {
+                                    "type": "image_url", 
+                                    "image_url": {
+                                        "url": f"data:{mime_type};base64,{b64_audio}"
+                                    }
+                                }
+                            ]
+                        }
+                    ]
+                    
+                    response = await chat_completion(messages, provider_index=provider_idx, model_index=model_idx)
+                    return response
+            
+            logger.error("Transcription failed: No valid API key or provider failed.")
+            return ""
+
+        except Exception as e:
+            logger.error(f"Transcription error: {e}")
+            return ""
 
     def _find_submit_url(self, html: str, links: list, current_url: str) -> str:
         """
@@ -82,7 +173,7 @@ class ExtractorAgent:
                 logger.info(f"Found submit URL via form: {submit_url}")
                 return submit_url
 
-        # 2. Check links
+        # 2. Check links (already passed in, but let's re-verify with soup to be safe/consistent)
         for a in soup.find_all("a", href=True):
             href = a["href"].strip()
             if "submit" in href.lower():
@@ -91,6 +182,7 @@ class ExtractorAgent:
                 return submit_url
 
         # 3. Regex on HTML
+        # Regex to find http/https URLs, stopping at whitespace or common punctuation
         urls = re.findall(r"https?://[^\s'\"<>]+", html)
         for u in urls:
             u = u.rstrip(".,;!)]}\"'")
@@ -99,7 +191,7 @@ class ExtractorAgent:
                 logger.info(f"Found submit URL via regex (HTML): {submit_url}")
                 return submit_url
 
-        # 4. Regex on Text
+        # 4. Regex on Text (handles split tags)
         text_content = soup.get_text(separator="")
         urls = re.findall(r"https?://[^\s'\"<>]+", text_content)
         for u in urls:
