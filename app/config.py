@@ -34,6 +34,16 @@ class Settings(BaseSettings):
     # Tier 2: Worker (Deep Analysis)
     WORKER_MODEL: str = "gemini-2.0-flash-lite"
 
+    # ------------------------
+    # OpenRouter
+    # ------------------------
+    OPENROUTER_API_KEY: str | None = None
+    OPENROUTER_BASE_URL: str = "https://openrouter.ai/api/v1"
+    
+    # Model Constants
+    SUPERVISOR_MODEL: str = "google/gemma-3-27b-it"
+    AUDIO_WORKER_MODEL: str = "google/gemini-2.0-flash-lite-001"
+
     LOG_LEVEL: str = "INFO"
 
     class Config:

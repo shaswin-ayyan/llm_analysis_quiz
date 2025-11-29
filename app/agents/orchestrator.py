@@ -1,133 +1,130 @@
 import logging
+import time
 import asyncio
-from typing import Dict, Any
+import os
+import shutil
+from app.agents.extractor_agent import extractor_agent
+from app.agents.supervisor_agent import supervisor_agent
+from app.utils.submitter import submit_answer
 
-from app.agents.tier1_orchestrator import tier1_orchestrator
+logger = logging.getLogger("uvicorn.error")
 
-logger = logging.getLogger(__name__)
-
-class QuizOrchestrator:
+class Orchestrator:
     def __init__(self):
-        pass
+        self.MAX_QUESTION_TIME = 180 # 3 minutes per question
+        self.MAX_RETRIES = 3
 
-    async def solve_quiz(self, context: Dict[str, Any]) -> Dict[str, Any]:
+    async def handle_task(self, start_url: str, email: str, secret: str):
         """
-        Orchestrates the quiz solving process using Tier 1 Agent.
-        context: { "question_text": ..., "files": ..., "email": ..., "secret": ... }
+        Orchestrates the full quiz solving process.
         """
-        logger.info(f"Starting QuizOrchestrator for question: {context.get('question_text')[:50]}...")
+        current_url = start_url
         
+        # Create a base workspace for this run
+        base_workspace = os.path.join(os.getcwd(), "workspace")
+        os.makedirs(base_workspace, exist_ok=True)
+
         try:
-            # 1. Validation
-            if not context.get("question_text"):
-                return {"error": "No question text provided."}
-            
-            # 2. Run Tier 1 Pipeline
-            # We wrap it in a timeout to prevent hanging
-            try:
-                result = await asyncio.wait_for(
-                    tier1_orchestrator.run(context), 
-                    timeout=120 # 2 minutes timeout
-                )
-            except asyncio.TimeoutError:
-                logger.error("Tier 1 timed out.")
-                return {"error": "Processing timed out."}
-            
-            # 3. Post-processing
-            if result.get("error"):
-                logger.error(f"Tier 1 failed: {result['error']}")
-                return {"error": result["error"]}
-                
-            final_answer = result.get("final_answer")
-            if final_answer is None:
-                return {"error": "No final answer returned."}
-                
-            return {"final_answer": final_answer}
+            while True:
+                question_start_time = time.time()
+                logger.info(f"Processing Quiz URL: {current_url}")
 
-        except Exception as e:
-            logger.error(f"Orchestrator error: {e}")
-            return {"error": str(e)}
+                # 1. Extraction
+                try:
+                    context = await extractor_agent.extract(current_url, base_workspace)
+                except Exception as e:
+                    logger.error(f"Extraction failed: {e}")
+                    return {"error": "extraction_failed"}
 
-    async def handle_task(self, url: str, email: str, secret: str):
-        """
-        Main handler called by the background task.
-        """
-        from app.agents.extractor_agent import extractor_agent
-        import aiohttp
-        
-        logger.info(f"Starting quiz task for {email} at {url}")
-        
-        try:
-            # 1. Extraction
-            logger.info("Extracting content...")
-            extraction = await extractor_agent.extract_content(url)
-            
-            if extraction.get("error"):
-                logger.error(f"Extraction failed: {extraction['error']}")
-                return
+                if not context.get("submit_url"):
+                    logger.error("No submit URL found.")
+                    return {"error": "no_submit_url"}
 
-            question_text = extraction.get("question")
-            submit_url = extraction.get("submit_url")
-            files = extraction.get("files", [])
-            
-            # Create context
-            context = {
-                "email": email,
-                "secret": secret,
-                "url": url,
-                "question_text": question_text,
-                "files": files,
-                "submit_url": submit_url
-            }
-            
-            # 2. Solve
-            logger.info("Solving quiz...")
-            result = await self.solve_quiz(context)
-            final_answer = result.get("final_answer")
-            
-            if final_answer:
-                # Unwrap if it's a dict from the agent
-                if isinstance(final_answer, dict):
-                    if "final_answer" in final_answer:
-                        final_answer = final_answer["final_answer"]
-                    elif "answer" in final_answer:
-                        final_answer = final_answer["answer"]
+                # 2. Reasoning (Retry Loop)
+                final_answer = None
+                next_url_candidate = None 
 
-                # 3. Submission
-                payload = {
-                    "email": email,
-                    "secret": secret,
-                    "url": url, # Current URL
-                    "answer": final_answer
-                }
-                
-                logger.info(f"Submitting answer: {final_answer} to {submit_url}")
-                
-                async with aiohttp.ClientSession() as session:
-                    async with session.post(submit_url, json=payload) as resp:
-                        if resp.status == 200:
-                            logger.info("Submission SUCCESS")
-                            resp_json = await resp.json()
-                            logger.info(f"Response: {resp_json}")
-                            
-                            # Check for next URL
-                            next_url = resp_json.get("next_url") or resp_json.get("url")
-                            if next_url:
-                                logger.info(f"Proceeding to next URL: {next_url}")
-                                # Recursive call? Or loop?
-                                # For safety, let's just call handle_task again?
-                                # But we need to be careful about recursion depth.
-                                # Ideally we should have a loop in handle_task.
-                                # But for now, let's just call it recursively.
-                                await self.handle_task(next_url, email, secret)
+                for attempt in range(self.MAX_RETRIES):
+                    elapsed = time.time() - question_start_time
+                    
+                    # TIMEOUT CHECK
+                    if elapsed > self.MAX_QUESTION_TIME:
+                        logger.warning("Question time limit exceeded.")
+                        if next_url_candidate:
+                             logger.info("Time limit reached, moving to next URL found in previous failed attempt.")
+                             current_url = next_url_candidate
+                             break
                         else:
-                            logger.error(f"Submission FAILED: {resp.status}")
-                            text = await resp.text()
-                            logger.error(f"Response: {text}")
-            else:
-                logger.error("No answer generated.")
-                
-        except Exception as e:
-            logger.error(f"Task failed: {e}")
-
-orchestrator = QuizOrchestrator()
+                             logger.error("Time limit reached and no next URL available.")
+                             return {"error": "timeout_and_no_next_url"}
+                    
+                    logger.info(f"Reasoning Attempt {attempt + 1} (Elapsed: {elapsed:.1f}s)")
+                    
+                    try:
+                        context["email"] = email
+                        context["secret"] = secret
+                        context["quiz_url"] = current_url
+                        
+                        # Use SUPERVISOR AGENT
+                        remaining_time = self.MAX_QUESTION_TIME - (time.time() - question_start_time) - 5
+                        if remaining_time < 10: remaining_time = 10
+                        
+                        final_answer = await asyncio.wait_for(
+                            supervisor_agent.run(context),
+                            timeout=remaining_time
+                        )
+                    except asyncio.TimeoutError:
+                        logger.error("Supervisor timed out.")
+                        continue
+                    except Exception as e:
+                        logger.error(f"Reasoning failed: {e}")
+                        continue
+                    
+                    if final_answer:
+                        # 3. Submission
+                        payload = {
+                            "email": email,
+                            "secret": secret,
+                            "url": current_url,
+                            "answer": final_answer
+                        }
+                        
+                        logger.info(f"Submitting answer: {final_answer}")
+                        response = await submit_answer(context["submit_url"], payload)
+                        
+                        if response and response.get("correct"):
+                            logger.info("Correct answer!")
+                            next_url = response.get("url") or response.get("next_url")
+                            if next_url:
+                                current_url = next_url # Move to next quiz
+                                break # Break retry loop, continue main loop (next question)
+                            else:
+                                return {"status": "completed", "final_message": "No next URL provided."}
+                        else:
+                            logger.warning(f"Incorrect answer: {response}")
+                            # Feedback loop
+                            context["question_text"] += f"\n\n[SYSTEM]: Previous Attempt Failed. Server Response: {response}. Try again."
+                            
+                            next_url = response.get("url") or response.get("next_url")
+                            if next_url:
+                                next_url_candidate = next_url
+                            
+                            if (time.time() - question_start_time) > 150 and next_url:
+                                logger.warning("Near timeout and incorrect answer. Skipping to next URL.")
+                                current_url = next_url
+                                break
+                    
+                else:
+                    logger.error("Max retries exhausted for this question.")
+                    if next_url_candidate:
+                        logger.info("Moving to next URL after retries exhausted.")
+                        current_url = next_url_candidate
+                    else:
+                        return {"error": "max_retries_exhausted"}
+        finally:
+            if os.path.exists(base_workspace):
+                try:
+                    shutil.rmtree(base_workspace)
+                    logger.info(f"Cleaned up workspace: {base_workspace}")
+                except Exception as e:
+                    logger.error(f"Failed to clean up workspace: {e}")

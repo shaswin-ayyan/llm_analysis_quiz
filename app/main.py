@@ -4,7 +4,7 @@ from dotenv import load_dotenv
 from fastapi import FastAPI, HTTPException, BackgroundTasks
 from pydantic import BaseModel
 
-from app.orchestrator import Orchestrator
+from app.agents.orchestrator import Orchestrator
 
 load_dotenv()
 
