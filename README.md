@@ -1,86 +1,170 @@
-# LLM Analysis Quiz Solver
+# LLM Analysis Quiz
 
-## Overview
+## Mock Quiz Server
+To test the agentic capabilities in a controlled environment, we have included a Mock Quiz Server.
 
-The **LLM Analysis Quiz Solver** is an advanced, automated system designed to solve complex data analysis quizzes using Large Language Models (LLMs). It leverages a multi-agent architecture to extract questions, analyze data (CSV, JSON, etc.), write and execute Python code, and submit answers via a REST API.
+### Features
+- **Data Analysis**: Tests PandasAI with dirty CSV data and outlier filtering.
+- **Audio Intelligence**: Tests audio transcription and code extraction.
+- **Agent Routing**: Verifies the agent can navigate multi-step workflows.
 
-The system is built for robustness and efficiency, featuring strict time management (180s per question), automatic retries with feedback loops, and self-cleaning workspace management.
+### Running the Mock Server
+1. Start the server:
+   ```bash
+   python mock_quiz_server.py
+   ```
+   It runs on `http://localhost:8003`.
 
-## System Design
+2. Run the Agent against it:
+   You can use the `verify_mock_agent.py` script (to be created) or manually trigger the orchestrator:
+   ```python
+   from app.orchestrator import Orchestrator
+   import asyncio
+   
+   asyncio.run(Orchestrator().handle_task("http://localhost:8003", "test@example.com", "s3cret"))
+   ```
+ Solver
 
-The architecture follows a hierarchical multi-agent pattern:
+A high-performance, two-tier agentic system designed to solve complex data analysis quizzes autonomously. The system leverages a multi-model architecture with **Google Gemma 3**, **Alibaba Tongyi DeepResearch**, and **Google Gemini 2.5** to achieve speed, depth, and multimodal capabilities.
 
-### 1. Orchestrator (`app/orchestrator.py`)
-The central nervous system of the application.
--   **Responsibility**: Manages the high-level quiz loop.
--   **Time Management**: Enforces a strict **180-second (3-minute)** timeout per question.
--   **Flow Control**: Handles extraction, reasoning, submission, and navigation to the next question.
--   **Error Handling**: Manages retries (up to 3 attempts) and decides when to skip a question if the time limit is breached.
--   **Cleanup**: Automatically deletes the `workspace` directory and all temporary files upon completion to save storage.
+## 🚀 System Architecture
 
-### 2. Extractor Agent (`app/agents/extractor_agent.py`)
--   **Responsibility**: Fetches the quiz URL, parses the HTML, and extracts the question text, data file links, and submission endpoints.
--   **Output**: A structured context dictionary containing all necessary metadata for the reasoning agents.
+The system employs a **Tiered Agent Architecture** to balance speed and reasoning depth.
 
-### 3. Tier 1 Orchestrator (`app/agents/tier1_orchestrator.py`)
--   **Responsibility**: The high-level reasoning agent. It plans the solution steps but delegates the actual coding and execution to the Tier 2 Worker.
--   **Role**: Acts as the "Project Manager" for the solution.
-
-### 4. Tier 2 Worker (`app/agents/workers/tier2_worker.py`)
--   **Responsibility**: The specialized "Data Scientist" agent.
--   **Capabilities**: Writes Python code, executes it using the `run_programming_task` tool, analyzes the output, and formulates the final answer.
--   **Safety**: Runs code in a controlled environment.
-
-## Workflow
-
-1.  **Initialization**: The system starts with a seed URL, email, and API secret.
-2.  **Extraction**: The `Extractor Agent` scrapes the page to find the question and data links.
-3.  **Reasoning Loop**:
-    -   The `Orchestrator` starts a timer (180s limit).
-    -   `Tier 1` analyzes the request and delegates to `Tier 2`.
-    -   `Tier 2` writes code to download data, process it (using pandas, etc.), and compute the answer.
-    -   The code is executed, and results are returned to the agents.
-4.  **Submission**:
-    -   The computed answer is submitted to the quiz API.
-    -   **Success**: If correct, the system extracts the `next_url` and proceeds immediately.
-    -   **Failure**: If incorrect, the system receives feedback and retries (up to 3 times).
-5.  **Timeout Handling**:
-    -   If the process exceeds **180 seconds**, the system attempts to gracefully fail.
-    -   If a `next_url` was discovered in a previous failed attempt, the system skips the current question and moves forward to keep the exam going.
-6.  **Cleanup**:
-    -   Once the quiz is finished (or a terminal error occurs), the `Orchestrator` automatically deletes the `workspace` folder, removing all downloaded datasets and temporary scripts.
-
-## Usage
-
-### Prerequisites
--   Python 3.10+
--   Gemini API Key (or compatible LLM key)
-
-### Installation
-
-1.  Clone the repository.
-2.  Install dependencies:
-    ```bash
-    pip install -r requirements.txt
-    ```
-3.  Set up environment variables (create a `.env` file):
-    ```env
-    GEMINI_API_KEY=your_api_key_here
-    ```
-
-### Running the Solver
-
-Execute the main application (assuming `main.py` or similar entry point):
-
-```bash
-python -m app.main
+```mermaid
+graph TD
+    User[User Request] --> API[FastAPI Endpoint /solve]
+    API --> Extractor[Extractor Agent]
+    Extractor --> Orchestrator[Tier 1: Orchestrator]
+    
+    subgraph "Tier 1: Speed & Strategy"
+        Orchestrator -->|Simple Task| FinalAnswer[Final Answer]
+        Orchestrator -->|Complex Task| Worker[Tier 2: Worker]
+    end
+    
+    subgraph "Tier 2: Deep Analysis"
+        Worker -->|Code Execution| Sandbox[Python Sandbox]
+        Worker -->|Data Loading| Tools[Data Tools]
+        Worker -->|Web Scraping| Scraper[Scraper Tool]
+        Sandbox --> Worker
+        Tools --> Worker
+        Scraper --> Worker
+    end
+    
+    Worker -->|Result| Orchestrator
+    Orchestrator -->|Final Response| User
 ```
 
-*Note: Ensure you have the correct starting URL and credentials configured in your launch configuration or passed as arguments.*
+### Components
 
-## Key Features
+1.  **Extractor Agent**:
+    -   **Role**: Pre-processing and data ingestion.
+    -   **Capabilities**: Scrapes web pages, downloads files (PDF, CSV, Audio, Archives), and transcribes audio using **Gemini 2.5 Flash Lite**.
+    -   **Output**: Structured context (text, file paths, links) for the Orchestrator.
 
--   **Strict Time Limits**: Ensures no single question blocks the entire exam. Hard limit of 3 minutes per question.
--   **Auto-Cleanup**: Keeps your disk clean by removing gigabytes of potential data files after the run.
--   **Resilient Logic**: Can recover from incorrect answers and navigate through the quiz even if some questions are missed (provided a next link is available).
--   **Multi-Agent Reasoning**: Separates planning from execution for higher accuracy.
+2.  **Tier 1: Orchestrator (Google Gemma 3 27B IT)**:
+    -   **Role**: Strategy, delegation, and fast-path solving.
+    -   **Capabilities**:
+        -   **Fast Path**: Solves simple questions immediately (e.g., "What is the capital of France?").
+        -   **Delegation**: Identifies complex tasks (Data Analysis, Coding, File Parsing) and delegates them to Tier 2.
+        -   **Multimodal**: Can process images and text directly.
+    -   **Model**: `google/gemma-3-27b-it` via OpenRouter.
+
+3.  **Tier 2: Worker (Alibaba Tongyi DeepResearch 30B)**:
+    -   **Role**: Execution and deep reasoning.
+    -   **Capabilities**:
+        -   **Python Sandbox**: Executes secure Python code for data analysis (Pandas, NumPy, Matplotlib).
+        -   **Tools**: Handles CSV/Excel/JSON loading, PDF parsing, and Archive extraction.
+        -   **Hallucination Safety**: Strictly instructed to distinguish between system secrets and data secrets.
+    -   **Model**: `alibaba/tongyi-deepresearch-30b-a3b` via OpenRouter.
+
+## 🛠️ Tech Stack
+
+-   **Backend**: FastAPI, Uvicorn
+-   **LLM Orchestration**: Custom Agent Framework (Tier 1/Tier 2)
+-   **LLM Providers**: OpenRouter (Primary), Google Gemini API (Direct Audio)
+-   **Browser Automation**: Playwright (for dynamic scraping)
+-   **Sandboxing**: Restricted Python environment for code execution
+-   **Security**: Bandit (SAST), Ruff (Linting)
+
+## 📦 Models Used
+
+| Role | Model | Provider | Reason |
+| :--- | :--- | :--- | :--- |
+| **Orchestrator** | `google/gemma-3-27b-it` | OpenRouter | High speed, strong instruction following, multimodal support. |
+| **Worker** | `alibaba/tongyi-deepresearch-30b-a3b` | OpenRouter | Excellent reasoning, coding, and long-context capabilities. |
+| **Audio** | `google/gemini-2.0-flash-lite-preview-02-05` | Google / OpenRouter | Cost-effective, fast, and accurate audio transcription. |
+
+## 🔧 Installation & Setup
+
+### Prerequisites
+-   Python 3.11+
+-   Docker (optional, for containerized deployment)
+
+### Environment Variables
+Create a `.env` file in the root directory:
+
+```env
+# API Keys
+OPENROUTER_API_KEY=sk-or-v1-...
+GEMINI_API_KEY=AIzaSy... (Optional, for direct audio)
+
+# Configuration
+QUIZ_SECRET=your_quiz_secret
+LOG_LEVEL=INFO
+```
+
+### Local Run
+1.  **Install Dependencies**:
+    ```bash
+    pip install -r requirements.txt
+    playwright install --with-deps chromium
+    ```
+
+2.  **Run Server**:
+    ```bash
+    python -m uvicorn app.main:app --host 0.0.0.0 --port 8000
+    ```
+
+### Docker Run
+```bash
+docker build -t llm-quiz-solver .
+docker run -p 8000:8000 --env-file .env llm-quiz-solver
+```
+
+## 🧪 Testing & CI
+
+The project enforces strict code quality:
+-   **Linting**: `ruff check .`
+-   **Security**: `bandit -r . -c bandit.yaml`
+-   **Tests**: `pytest`
+
+### Security Features
+-   **Zip Slip Prevention**: `tarfile` extraction uses `filter='data'`.
+-   **Secret Safety**: System prompts explicitly prevent the agent from leaking the `QUIZ_SECRET`.
+-   **Sandboxing**: Python execution is isolated to prevent system access.
+
+## 📊 Workflow Diagram
+
+```mermaid
+sequenceDiagram
+    participant U as User
+    participant O as Orchestrator (Gemma 3)
+    participant W as Worker (Tongyi)
+    participant T as Tools
+
+    U->>O: Submit Question
+    O->>O: Analyze Complexity
+    alt Simple Task
+        O->>U: Return Answer
+    else Complex Task
+        O->>W: Delegate Task
+        loop Reasoning Loop
+            W->>W: Think & Plan
+            W->>T: Execute Tool (Python/Scrape)
+            T-->>W: Tool Output
+        end
+        W-->>O: Final Result
+        O-->>U: Return Answer
+    end
+```

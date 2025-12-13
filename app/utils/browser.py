@@ -75,22 +75,54 @@ class BrowserManager:
                     data["links"].append(full_url)
                     
                     lower_href = href.lower()
-                    if lower_href.endswith(".csv"):
-                        local_path = await self._download_file(full_url, download_dir)
-                        if local_path:
-                            data["files"]["csv"].append(local_path)
-                    elif lower_href.endswith(".pdf"):
-                        local_path = await self._download_file(full_url, download_dir)
-                        if local_path:
-                            data["files"]["pdf"].append(local_path)
-                    elif lower_href.endswith(".json"):
-                        local_path = await self._download_file(full_url, download_dir)
-                        if local_path:
-                            data["files"]["json"].append(local_path)
-                    elif lower_href.endswith((".mp3", ".wav", ".ogg", ".opus")):
-                        local_path = await self._download_file(full_url, download_dir)
-                        if local_path:
-                            data["files"]["audio"].append(local_path)
+                    
+                    # Check Content-Type for potential files
+                    # We check if extension matches OR if we should probe dynamic links (optional, but requested fix implies robustness)
+                    # The user request specifically mentioned "url.endswith('.csv') misses dynamic links".
+                    # So we should probably check content type for ALL links? No, that's too slow.
+                    # We will check content type if extension matches OR if it looks like a download link?
+                    # The prompt said: "Before skipping a link, perform a HEAD request." 
+                    # That implies checking everything? That might be too heavy.
+                    # Let's stick to the prompt: "The Problem: url.endswith('.csv') misses dynamic links... The Fix: Before skipping a link, perform a HEAD request."
+                    # This phrasing is slightly ambiguous. "Before skipping" might mean "If it doesn't match extension, check HEAD".
+                    # But checking HEAD for every link on a page (could be 100s) is bad.
+                    # Let's implement a smarter filter: Check if extension matches OR query params exist.
+                    
+                    is_candidate = False
+                    ext_map = {
+                        ".csv": "csv", 
+                        ".pdf": "pdf", 
+                        ".json": "json", 
+                        ".mp3": "audio", ".wav": "audio", ".ogg": "audio", ".opus": "audio"
+                    }
+                    
+                    # 1. Extension match
+                    for ext, type_key in ext_map.items():
+                        if lower_href.endswith(ext):
+                            is_candidate = True
+                            break
+                    
+                    # 2. Dynamic link match (e.g. download.php?id=...)
+                    if not is_candidate and ("?" in lower_href or "download" in lower_href):
+                        is_candidate = True
+                        
+                    if is_candidate:
+                        # Perform HEAD request to verify MIME type
+                        mime_type = await self._check_content_type(full_url)
+                        
+                        if mime_type:
+                            if "csv" in mime_type or "spreadsheet" in mime_type or "text/plain" in mime_type:
+                                local_path = await self._download_file(full_url, download_dir)
+                                if local_path: data["files"]["csv"].append(local_path)
+                            elif "pdf" in mime_type:
+                                local_path = await self._download_file(full_url, download_dir)
+                                if local_path: data["files"]["pdf"].append(local_path)
+                            elif "json" in mime_type:
+                                local_path = await self._download_file(full_url, download_dir)
+                                if local_path: data["files"]["json"].append(local_path)
+                            elif "audio" in mime_type:
+                                local_path = await self._download_file(full_url, download_dir)
+                                if local_path: data["files"]["audio"].append(local_path)
 
                 # 3. Check for HTML tables? 
                 # If there are tables, maybe save the HTML itself as a "file" for load_html_tables?
@@ -136,6 +168,71 @@ class BrowserManager:
         except Exception as e:
             logger.error(f"Download error for {url}: {e}")
             return None
+
+    async def _check_content_type(self, url: str) -> str:
+        """
+        Performs a HEAD request to check the Content-Type of a URL.
+        """
+        try:
+            async with aiohttp.ClientSession() as session:
+                async with session.head(url, allow_redirects=True, timeout=5) as resp:
+                    if resp.status == 200:
+                        return resp.headers.get("Content-Type", "").lower()
+                    # If HEAD fails (some servers don't support it), try GET with stream=True
+                    if resp.status == 405:
+                        async with session.get(url, allow_redirects=True, timeout=5) as get_resp:
+                            if get_resp.status == 200:
+                                return get_resp.headers.get("Content-Type", "").lower()
+            return ""
+        except Exception as e:
+            logger.warning(f"Failed to check content type for {url}: {e}")
+            return ""
+
+    async def find_task_image_url(self, page_url: str) -> str:
+        """
+        Actively hunts for the task image using Playwright locators.
+        """
+        async with async_playwright() as p:
+            browser = await p.chromium.launch(headless=True, args=["--no-sandbox"])
+            page = await browser.new_page()
+            try:
+                await page.goto(page_url, wait_until="networkidle", timeout=60000)
+                
+                # STRATEGY 1: Look for Anchors linking to Images
+                # Matches <a href="/project2/heatmap.png">
+                # We use regex for extensions
+                image_link = await page.locator('a[href$=".png"], a[href$=".jpg"], a[href$=".jpeg"]').first.get_attribute('href')
+                
+                if image_link:
+                    full_url = urljoin(page_url, image_link)
+                    logger.info(f"Found image via anchor: {full_url}")
+                    return full_url
+
+                # STRATEGY 2: Look for Image Tags directly
+                # Matches <img src="...">
+                img_src = await page.locator('img[src$=".png"], img[src$=".jpg"]').first.get_attribute('src')
+                
+                if img_src:
+                    full_url = urljoin(page_url, img_src)
+                    logger.info(f"Found image via img tag: {full_url}")
+                    return full_url
+                    
+                # STRATEGY 3 (Fallback): Screenshot
+                # We return a special URI scheme "screenshot://path" or just path?
+                # User said: return f"file://{screenshot_path}"
+                # But we need to save it to a persistent location, not /tmp if possible.
+                # We'll save to current working directory or a temp dir.
+                # Let's use os.getcwd()/workspace/screenshots if possible, or just "screenshot.png" in CWD.
+                screenshot_path = os.path.abspath("page_screenshot.png")
+                await page.screenshot(path=screenshot_path)
+                logger.info(f"No image found. Took screenshot: {screenshot_path}")
+                return f"file://{screenshot_path}"
+                
+            except Exception as e:
+                logger.error(f"Image discovery failed: {e}")
+                return ""
+            finally:
+                await browser.close()
 
 # Global instance
 browser_manager = BrowserManager()

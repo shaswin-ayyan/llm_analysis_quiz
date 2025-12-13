@@ -1,0 +1,11 @@
+<!doctype html>
+<title>project2-invoice</title>
+<h1>/project2-invoice</h1>
+<p><strong>Difficulty:</strong> 3 (next URL only on correct answer)</p>
+<p><strong>Personalized:</strong> No.</p>
+<ol>
+  <li>Open <a href="/project2/invoice.pdf">/project2/invoice.pdf</a>.</li>
+  <li>Compute <code>sum(Quantity * UnitPrice)</code> across line items.</li>
+  <li>POST the total rounded to 2 decimals as <code>answer</code> with <code>url</code> = <code><span class="origin"></span>/project2-invoice</code>.</li>
+</ol>
+<script type="module">for (const el of document.querySelectorAll('.origin')) el.textContent = window.location.origin;</script>

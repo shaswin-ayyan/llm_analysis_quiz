@@ -1,0 +1,12 @@
+Starting Live Test (LangGraph) for 23f1000266@ds.study.iitm.ac.in on https://tds-llm-analysis.s-anand.net/project2...
+
+--- Step 1: https://tds-llm-analysis.s-anand.net/project2 ---
+Error executing graph: The SqliteSaver does not support async methods. Consider using AsyncSqliteSaver instead.
+from langgraph.checkpoint.sqlite.aio import AsyncSqliteSaver
+Note: AsyncSqliteSaver requires the aiosqlite package to use.
+Install with:
+`pip install aiosqlite`
+See https://langchain-ai.github.io/langgraph/reference/checkpoints/#langgraph.checkpoint.sqlite.aio.AsyncSqliteSaverfor more information.
+
+Generating Report...
+Report saved to live_test_results.md

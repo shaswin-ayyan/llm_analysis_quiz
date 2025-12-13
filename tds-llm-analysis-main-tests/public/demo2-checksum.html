@@ -1,0 +1,23 @@
+<!DOCTYPE html>
+<meta charset="utf-8">
+<title>Demo2 Checksum</title>
+<main>
+  <h1>Checksum step</h1>
+  <p>
+    Take your 8-digit key from <code>/demo2</code>, append the blob below exactly, and compute <code>SHA256(key + blob)</code>. Submit the first 12 hex characters back to <code>/submit</code> with
+    <code>"url": "/demo2-checksum"</code>.
+  </p>
+  <p><strong>Blob:</strong> <code id="blob"></code></p>
+  <p>Email in play: <code id="email"></code></p>
+  <p>
+    Hint: a quick check in JS looks like
+    <code>crypto.subtle.digest("SHA-256", new TextEncoder().encode(key + blob))</code>.
+  </p>
+</main>
+
+<script type="module">
+import { demo2Blob, getEmail } from "./utils.js";
+
+document.querySelector("#blob").textContent = demo2Blob;
+document.querySelector("#email").textContent = getEmail() ?? "(add ?email=...)";
+</script>

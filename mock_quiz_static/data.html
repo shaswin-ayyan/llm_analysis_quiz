@@ -1,0 +1,22 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>Task 1: Data Analysis</title>
+</head>
+
+<body>
+    <h1>Task 1: Salary Analysis</h1>
+    <p>Download the CSV file below. It contains salary data for a company.</p>
+    <p><a href="/mock_data.csv">Download CSV</a></p>
+    <p><strong>Question:</strong> Calculate the average salary of the 'Engineering' department, excluding any outliers
+        (salary > 100000 or < 20000). Return the value as a whole number.</p>
+            <form action="/submit" method="post">
+                <input type="hidden" name="task_id" value="data">
+                <label for="answer">Answer:</label>
+                <input type="text" id="answer" name="answer">
+                <input type="submit" value="Submit">
+            </form>
+</body>
+
+</html>

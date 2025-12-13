@@ -1,0 +1,8 @@
+{
+  "tools": [
+    {"name": "search_docs", "args": ["query"]},
+    {"name": "fetch_issue", "args": ["owner", "repo", "id"]},
+    {"name": "summarize", "args": ["text", "max_tokens"]}
+  ],
+  "prompt": "Find the status of issue 42 in repo demo/api and summarize in 60 words"
+}

@@ -1,0 +1,11 @@
+<!doctype html>
+<title>project2-orders</title>
+<h1>/project2-orders</h1>
+<p><strong>Difficulty:</strong> 3 (next URL only on correct answer)</p>
+<p><strong>Personalized:</strong> No.</p>
+<ol>
+  <li>Download <a href="/project2/orders.csv">/project2/orders.csv</a>.</li>
+  <li>Compute running totals by <code>customer_id</code> in order of <code>order_date</code>, then take the top 3 customers by total (highest first).</li>
+  <li>POST a JSON array of objects <code>{"customer_id": "...", "total": number}</code> for those top 3, in rank order, with <code>url</code> = <code><span class="origin"></span>/project2-orders</code>.</li>
+</ol>
+<script type="module">for (const el of document.querySelectorAll('.origin')) el.textContent = window.location.origin;</script>

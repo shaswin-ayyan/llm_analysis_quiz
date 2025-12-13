@@ -1,0 +1,16 @@
+id,name,salary,department,performance_score
+1,Alice,50000,Sales,4.5
+2,Bob,60000,Engineering,4.8
+3,Charlie,55000,Sales,3.2
+4,David,70000,Engineering,4.9
+5,Eve,48000,HR,4.0
+6,Frank,52000,Sales,2.5
+7,Grace,80000,Engineering,5.0
+8,Heidi,45000,HR,3.8
+9,Ivan,62000,Engineering,4.2
+10,Judy,58000,Sales,4.1
+11,Mallory,90000,Engineering,1.0
+12,Niaj,120000,CEO,5.0
+13,Olivia,51000,Sales,3.9
+14,Peggy,49000,HR,3.5
+15,Sybil,10000,Intern,2.0

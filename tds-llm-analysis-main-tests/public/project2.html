@@ -1,0 +1,15 @@
+<!doctype html>
+<title>Project 2 entry</title>
+<h1>/project2</h1>
+<p>How to play:</p>
+<ul>
+  <li>Start by POSTing JSON to <code><span class="origin"></span>/submit</code> with <code>{ email, secret, url, answer }</code>, using <code>url</code> = <code><span class="origin"></span>/project2</code>.</li>
+  <li>After each submission, the response tells you if it is correct and, if allowed, the <strong>next URL</strong>. Open that URL in the browser to read the task-specific instructions.</li>
+  <li>Each task page clearly states the required answer format to unlock the next URL. Difficulty 1–2 always reveal the next link; difficulty 3–5 reveal it only when correct.</li>
+  <li>Some steps are personalized to your email (noted on the step page). Steps marked “Not personalized” accept the same answer for everyone.</li>
+</ul>
+<script type="module">
+for (const el of document.querySelectorAll('.origin')) {
+  el.textContent = window.location.origin;
+}
+</script>

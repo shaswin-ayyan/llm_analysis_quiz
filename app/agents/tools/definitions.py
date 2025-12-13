@@ -5,15 +5,232 @@ import io
 import base64
 import matplotlib.pyplot as plt
 from bs4 import BeautifulSoup
-from app.agents.sandbox import PythonSandbox
+from app.agents.sandbox import code_interpreter
 from app.utils.browser import render_page_with_retries
 from app.utils.url_utils import extract_urls
 from app.config import settings
 
 logger = logging.getLogger(__name__)
 
-# Initialize Sandbox
-sandbox = PythonSandbox()
+async def analyze_image(args, df=None):
+    """
+    Analyzes an image using Gemini.
+    args:
+      - path: str
+      - prompt: str
+    """
+    path = args.get("path")
+    prompt = args.get("prompt", "Describe this image.")
+    if not path:
+        return {"error": "No path provided"}
+    
+    import httpx
+    import mimetypes
+    
+    try:
+        # 1. Read and Encode Image
+        with open(path, "rb") as f:
+            image_data = base64.b64encode(f.read()).decode("utf-8")
+            
+        mime_type, _ = mimetypes.guess_type(path)
+        if not mime_type:
+            mime_type = "image/png" # Default fallback
+            
+        # 2. Prepare Request
+        # We use the configured AUDIO_MODEL (or we should have a VISION_MODEL, but let's reuse AUDIO_MODEL or WORKER_MODEL if multimodal)
+        # Settings.WORKER_MODEL is "alibaba/tongyi-deepresearch-30b-a3b" which might not be multimodal?
+        # Settings.AUDIO_MODEL is "google/gemini-2.0-flash-lite-001" which IS multimodal.
+        # Let's use AUDIO_MODEL for now as it's definitely Gemini.
+        model = settings.AUDIO_MODEL
+        
+        # Determine Provider/URL
+        if settings.USE_AIPIPE:
+            url = settings.AIPIPE_BASE_URL.rstrip("/") + "/chat/completions"
+            api_key = settings.AIPIPE_API_KEY or settings.OPENAI_API_KEY
+            headers = {
+                "Authorization": f"Bearer {api_key}",
+                "Content-Type": "application/json"
+            }
+            
+            payload = {
+                "model": model,
+                "messages": [
+                    {
+                        "role": "user",
+                        "content": [
+                            {"type": "text", "text": prompt},
+                            {
+                                "type": "image_url",
+                                "image_url": {
+                                    "url": f"data:{mime_type};base64,{image_data}"
+                                }
+                            }
+                        ]
+                    }
+                ]
+            }
+            
+        else:
+            return {"error": "Direct Gemini API not implemented for image yet. Enable AIPIPE."}
+
+        # 3. Send Request
+        async with httpx.AsyncClient(timeout=60) as client:
+            resp = await client.post(url, headers=headers, json=payload)
+            
+        if resp.status_code != 200:
+            return {"error": f"Image analysis failed: {resp.status_code} {resp.text}"}
+            
+        data = resp.json()
+        text = data["choices"][0]["message"]["content"]
+        return {"analysis": text}
+
+    except Exception as e:
+        return {"error": str(e)}
+
+async def download_file(args, df=None):
+    """
+    Downloads a file from a URL to the workspace.
+    args:
+      - url: str
+    """
+    url = args.get("url")
+    if not url:
+        return {"error": "url argument is required."}
+    
+    import httpx
+    import os
+    from urllib.parse import urlparse
+    
+    try:
+        # Use proxy if needed (similar to scrape_url)
+        proxy_base = settings.AIPIPE_PROXY_URL.rstrip("/")
+        if not url.startswith(proxy_base) and not url.startswith("http://localhost"):
+             # Only proxy external URLs if needed, but for localhost test server we shouldn't proxy
+             # Actually, scrape_url logic was:
+             # if not url.startswith(proxy_base): target_url = f"{proxy_base}/{url}"
+             # But for localhost, we must NOT proxy.
+             pass
+             
+        # Simple download
+        async with httpx.AsyncClient() as client:
+            resp = await client.get(url)
+            if resp.status_code != 200:
+                return {"error": f"Download failed: {resp.status_code}"}
+            
+            # Determine filename
+            parsed = urlparse(url)
+            filename = os.path.basename(parsed.path)
+            if not filename:
+                filename = "downloaded_file"
+                
+            # Save to workspace
+            # We assume CWD is workspace or we use absolute path
+            # Let's use a 'downloads' folder in CWD
+            save_dir = os.path.join(os.getcwd(), "workspace", "downloads")
+            os.makedirs(save_dir, exist_ok=True)
+            save_path = os.path.join(save_dir, filename)
+            
+            with open(save_path, "wb") as f:
+                f.write(resp.content)
+                
+            return {
+                "path": save_path, 
+                "filename": filename,
+                "message": f"File downloaded to {save_path}. IMPORTANT: In python_execute, access this file as '{filename}' (it is in the current directory)."
+            }
+            
+    except Exception as e:
+        return {"error": str(e)}
+
+async def transcribe_audio(args, df=None):
+    """
+    Transcribes audio using Gemini.
+    args:
+      - path: str
+    """
+    path = args.get("path")
+    if not path:
+        return {"error": "No path provided"}
+    
+    import httpx
+    import mimetypes
+    
+    try:
+        # 1. Read and Encode Audio
+        with open(path, "rb") as f:
+            audio_data = base64.b64encode(f.read()).decode("utf-8")
+            
+        mime_type, _ = mimetypes.guess_type(path)
+        if not mime_type:
+            mime_type = "audio/mpeg" # Default fallback
+            
+        # 2. Prepare Request
+        # We use the configured AUDIO_MODEL
+        model = settings.AUDIO_MODEL
+        
+        # Determine Provider/URL
+        if settings.USE_AIPIPE:
+            url = settings.AIPIPE_BASE_URL.rstrip("/") + "/chat/completions"
+            api_key = settings.AIPIPE_API_KEY or settings.OPENAI_API_KEY
+            headers = {
+                "Authorization": f"Bearer {api_key}",
+                "Content-Type": "application/json"
+            }
+            # OpenAI-compatible Multimodal Payload (for AIPipe/OpenRouter)
+            payload = {
+                "model": model,
+                "messages": [
+                    {
+                        "role": "user",
+                        "content": [
+                            {"type": "text", "text": "Transcribe this audio file exactly. If there are numbers, write them as digits (e.g., '219' not 'two one nine')."},
+                            {
+                                "type": "input_audio", 
+                                "input_audio": {
+                                    "data": audio_data,
+                                    "format": "mp3" if "mp3" in mime_type else "wav" # Simplified mapping
+                                }
+                            }
+                        ]
+                    }
+                ]
+            }
+            # Note: OpenRouter/AIPipe audio format might differ. 
+            # Standard OpenAI is "input_audio": {"data": ..., "format": ...}
+            # But Gemini via OpenRouter might accept image_url style or specific gemini format?
+            # Let's try the standard OpenAI audio format first.
+            # If that fails, we might need to use "image_url" style with data URI for some providers, 
+            # but audio is specific.
+            # Actually, for Gemini via OpenAI compat, it's often:
+            # content: [{"type": "text", ...}, {"type": "image_url", "image_url": {"url": "data:audio/mp3;base64,..."}}]
+            # Let's try the data URI approach which is more common for "multimodal" adapters.
+            
+            payload["messages"][0]["content"][1] = {
+                "type": "image_url", # Often used for generic file inputs in adapters
+                "image_url": {
+                    "url": f"data:{mime_type};base64,{audio_data}"
+                }
+            }
+            
+        else:
+            # Direct Gemini API
+            # url = ...
+            return {"error": "Direct Gemini API not implemented for audio yet. Enable AIPIPE."}
+
+        # 3. Send Request
+        async with httpx.AsyncClient(timeout=60) as client:
+            resp = await client.post(url, headers=headers, json=payload)
+            
+        if resp.status_code != 200:
+            return {"error": f"Transcription failed: {resp.status_code} {resp.text}"}
+            
+        data = resp.json()
+        text = data["choices"][0]["message"]["content"]
+        return {"transcription": text}
+
+    except Exception as e:
+        return {"error": str(e)}
+
 
 async def python_execute(args, df=None):
     """
@@ -25,7 +242,18 @@ async def python_execute(args, df=None):
     if not code:
         return {"error": "No code provided"}
     
-    return sandbox.execute(code)
+    # Use code_interpreter
+    # Auto-Sync: Scan workspace/downloads and upload all files to sandbox
+    import os
+    files_to_sync = []
+    downloads_dir = os.path.join(os.getcwd(), "workspace", "downloads")
+    if os.path.exists(downloads_dir):
+        for root, _, files in os.walk(downloads_dir):
+            for file in files:
+                files_to_sync.append(os.path.join(root, file))
+                
+    result = await code_interpreter.run_code(code, files=files_to_sync)
+    return {"stdout": result}
 
 async def load_csv_metadata(args, df=None):
     """
@@ -61,7 +289,8 @@ async def load_csv_metadata(args, df=None):
         else:
             df = pd.read_csv(path, header=None)
             
-        sandbox.globals["df"] = df
+        # sandbox.globals["df"] = df # Cannot set globals in remote sandbox easily this way
+        # For now, we just return metadata. The worker should load the CSV in its own code.
         
         return {
             "columns": list(df.columns),
@@ -69,7 +298,7 @@ async def load_csv_metadata(args, df=None):
             "first_5_rows": df.head().to_dict(orient="records"),
             "dtypes": df.dtypes.astype(str).to_dict(),
             "has_header": has_header,
-            "message": "DataFrame loaded into sandbox as variable 'df'. Check 'has_header' field!"
+            "message": "CSV metadata loaded. To analyze, write Python code that reads this CSV."
         }
     except Exception as e:
         return {"error": str(e)}
@@ -86,13 +315,12 @@ async def load_excel_metadata(args, df=None):
     
     try:
         df = pd.read_excel(path)
-        sandbox.globals["df"] = df
         return {
             "columns": list(df.columns),
             "num_rows": len(df),
             "first_5_rows": df.head().to_dict(orient="records"),
             "dtypes": df.dtypes.astype(str).to_dict(),
-            "message": "DataFrame loaded into sandbox as variable 'df'"
+            "message": "Excel metadata loaded. To analyze, write Python code that reads this Excel file."
         }
     except Exception as e:
         return {"error": str(e)}
@@ -109,13 +337,12 @@ async def load_json_metadata(args, df=None):
     
     try:
         df = pd.read_json(path)
-        sandbox.globals["df"] = df
         return {
             "columns": list(df.columns),
             "num_rows": len(df),
             "first_5_rows": df.head().to_dict(orient="records"),
             "dtypes": df.dtypes.astype(str).to_dict(),
-            "message": "DataFrame loaded into sandbox as variable 'df'"
+            "message": "JSON metadata loaded. To analyze, write Python code that reads this JSON file."
         }
     except Exception as e:
         return {"error": str(e)}
@@ -190,21 +417,11 @@ async def plot_to_base64(args, df=None):
         return {"error": "No code provided"}
     
     try:
-        plt.clf()
-        res = sandbox.execute(code)
-        if res.get("error"):
-            return res
-            
-        buf = io.BytesIO()
-        plt.savefig(buf, format="png")
-        buf.seek(0)
-        img_str = base64.b64encode(buf.read()).decode("utf-8")
-        plt.clf()
-        
-        return {
-            "stdout": res.get("stdout"),
-            "image_base64": img_str
-        }
+        # We can't easily get the plot from remote sandbox or local exec without saving to file
+        # For now, let's just run the code and hope it saves a file we can read?
+        # Or just return stdout.
+        res = await code_interpreter.run_code(code)
+        return {"stdout": res, "message": "Plotting not fully supported in current sandbox mode. Ensure code saves image to disk."}
     except Exception as e:
         return {"error": str(e)}
 
@@ -279,11 +496,17 @@ async def extract_archive(args, df=None):
         
         if zipfile.is_zipfile(path):
             with zipfile.ZipFile(path, 'r') as zip_ref:
-                zip_ref.extractall(extract_dir)
+                # Security fix: Prevent Zip Slip
+                for member in zip_ref.namelist():
+                    member_path = os.path.join(extract_dir, member)
+                    if not os.path.abspath(member_path).startswith(os.path.abspath(extract_dir)):
+                        raise Exception(f"Zip Slip attempt detected: {member}")
+                zip_ref.extractall(extract_dir) # nosec B202
                 extracted_files = zip_ref.namelist()
         elif tarfile.is_tarfile(path):
             with tarfile.open(path, 'r') as tar_ref:
-                tar_ref.extractall(extract_dir)
+                # Security fix: use filter='data' to prevent Zip Slip (Python 3.11+)
+                tar_ref.extractall(extract_dir, filter='data')
                 extracted_files = tar_ref.getnames()
         else:
             return {"error": "Unsupported archive format or not an archive."}

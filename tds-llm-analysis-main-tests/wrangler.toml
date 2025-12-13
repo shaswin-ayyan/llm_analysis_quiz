@@ -1,0 +1,23 @@
+name = "tds-llm-analysis"
+main = "src/worker.js"
+compatibility_date = "2025-10-11"
+
+# Docs: https://developers.cloudflare.com/workers/static-assets/binding/
+[assets]
+directory = "./public"
+binding = "ASSETS"
+# By default, asserts are served first
+# run_worker_first = false
+
+# Docs: https://developers.cloudflare.com/d1/configuration/
+[[d1_databases]]
+binding = "tds_llm_analysis"
+database_name = "tds-llm-analysis"
+database_id = "bc4ff49f-b3d6-43bd-a840-a4f13f689b82"
+
+# https://developers.cloudflare.com/d1/observability/
+[observability]
+[observability.logs]
+enabled = true
+head_sampling_rate = 1
+invocation_logs = true

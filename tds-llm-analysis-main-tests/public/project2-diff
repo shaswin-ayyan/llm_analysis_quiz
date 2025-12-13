@@ -1,0 +1,11 @@
+<!doctype html>
+<title>project2-diff</title>
+<h1>/project2-diff</h1>
+<p><strong>Difficulty:</strong> 3 (next URL only on correct answer)</p>
+<p><strong>Personalized:</strong> No.</p>
+<ol>
+  <li>Compare <a href="/project2/before.png">/project2/before.png</a> and <a href="/project2/after.png">/project2/after.png</a>.</li>
+  <li>Count how many pixels differ in RGB values.</li>
+  <li>POST that integer as <code>answer</code> with <code>url</code> = <code><span class="origin"></span>/project2-diff</code>.</li>
+</ol>
+<script type="module">for (const el of document.querySelectorAll('.origin')) el.textContent = window.location.origin;</script>

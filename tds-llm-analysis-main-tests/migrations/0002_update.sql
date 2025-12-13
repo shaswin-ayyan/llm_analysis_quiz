@@ -1,0 +1,2 @@
+ALTER TABLE submit ADD COLUMN "reason" TEXT;
+ALTER TABLE submit ADD COLUMN "delay" INTEGER;

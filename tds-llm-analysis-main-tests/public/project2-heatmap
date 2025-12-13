@@ -1,0 +1,11 @@
+<!doctype html>
+<title>project2-heatmap</title>
+<h1>/project2-heatmap</h1>
+<p><strong>Difficulty:</strong> 2 (next URL revealed even if wrong)</p>
+<p><strong>Personalized:</strong> No.</p>
+<ol>
+  <li>Open <a href="/project2/heatmap.png">/project2/heatmap.png</a>.</li>
+  <li>Find the most frequent RGB color. Return it as a hex string, e.g., <code>#rrggbb</code>.</li>
+  <li>POST the hex string as <code>answer</code> with <code>url</code> = <code><span class="origin"></span>/project2-heatmap</code>.</li>
+</ol>
+<script type="module">for (const el of document.querySelectorAll('.origin')) el.textContent = window.location.origin;</script>

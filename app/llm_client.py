@@ -53,18 +53,22 @@ OPENROUTER_PROVIDER = {
 ALL_PROVIDERS.append(OPENROUTER_PROVIDER)
 
 # ======================
-# AIPipe Gemini Provider (Disabled)
+# AIPipe Provider (Conditional)
 # ======================
-# User requested to switch to OpenRouter for worker as well.
-# if settings.GEMINI_API_KEY:
-#     AIPIPE_GEMINI_PROVIDER = {
-#         "name": "AIPipe Gemini",
-#         "type": "gemini",
-#         "url": "https://aipipe.org/geminiv1beta/models", 
-#         "api_key": settings.GEMINI_API_KEY,
-#         "models": [settings.WORKER_MODEL],
-#     }
-#     ALL_PROVIDERS.append(AIPIPE_GEMINI_PROVIDER)
+if settings.USE_AIPIPE:
+    # When using AIPIPE, we want to route ALL requests through it.
+    # We can reuse the OpenRouter model list or define a specific one.
+    # For now, we'll use the same models but route via AIPIPE.
+    
+    AIPIPE_PROVIDER = {
+        "name": "AIPipe",
+        "type": "aipipe",
+        "url": settings.AIPIPE_BASE_URL.rstrip("/") + "/chat/completions",
+        "api_key": settings.AIPIPE_API_KEY or settings.OPENAI_API_KEY,
+        "models": OPENROUTER_MODELS, # Reuse the same model list
+    }
+    # Insert AIPIPE as the FIRST provider if enabled
+    ALL_PROVIDERS.insert(0, AIPIPE_PROVIDER)
 
 
 # ***************************************************************

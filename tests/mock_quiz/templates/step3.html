@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Mock Quiz - Step 3</title>
+</head>
+<body>
+    <h1>Step 3: Archive Challenge</h1>
+    <p>Download the Archive and find the secret key in the text file inside.</p>
+    <a href="/static/archive.zip">Download Archive</a>
+    <p>Once you have all the answers (Audio Code, CSV Sum, Archive Key), submit them.</p>
+    
+    <form id="quizForm">
+        <label>Final Answer JSON:</label><br>
+        <textarea id="answer" rows="5" cols="50">{"audio_code": "...", "csv_sum": "...", "archive_key": "..."}</textarea><br>
+        <button type="button" onclick="submitQuiz()">Submit</button>
+    </form>
+
+    <script>
+        async function submitQuiz() {
+            const answer = document.getElementById("answer").value;
+            try {
+                const response = await fetch("/submit", {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json"
+                    },
+                    body: JSON.stringify({ answer: JSON.parse(answer) })
+                });
+                const result = await response.json();
+                alert(JSON.stringify(result, null, 2));
+            } catch (e) {
+                alert("Error: " + e);
+            }
+        }
+    </script>
+</body>
+</html>

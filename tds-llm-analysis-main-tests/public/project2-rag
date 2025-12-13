@@ -1,0 +1,11 @@
+<!doctype html>
+<title>project2-rag</title>
+<h1>/project2-rag</h1>
+<p><strong>Difficulty:</strong> 5 (next URL only on correct answer)</p>
+<p><strong>Personalized:</strong> No.</p>
+<ol>
+  <li>Open <a href="/project2/rag.json">/project2/rag.json</a>.</li>
+  <li>Compute score = <code>0.6 * lex + 0.4 * vector</code> for each chunk.</li>
+  <li>POST the top 3 chunk IDs in descending score order (comma or space separated) as <code>answer</code> with <code>url</code> = <code><span class="origin"></span>/project2-rag</code>.</li>
+</ol>
+<script type="module">for (const el of document.querySelectorAll('.origin')) el.textContent = window.location.origin;</script>

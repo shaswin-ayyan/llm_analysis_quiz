@@ -1,0 +1,11 @@
+<!doctype html>
+<title>project2-rate</title>
+<h1>/project2-rate</h1>
+<p><strong>Difficulty:</strong> 4 (next URL only on correct answer)</p>
+<p><strong>Personalized:</strong> Yes. Add an offset based on your email length.</p>
+<ol>
+  <li>Read limits from <a href="/project2/rate.json">/project2/rate.json</a>. Compute the minimal whole minutes to fetch all pages, respecting per-minute/per-hour caps and retry sleeps.</li>
+  <li>Compute <code>offset = (length of your email) mod 3</code>. Final answer = base minutes + offset.</li>
+  <li>Submit the final minute count as a number in <code>answer</code> with <code>url</code> = <code><span class="origin"></span>/project2-rate</code>. Send the number only.</li>
+</ol>
+<script type="module">for (const el of document.querySelectorAll('.origin')) el.textContent = window.location.origin;</script>

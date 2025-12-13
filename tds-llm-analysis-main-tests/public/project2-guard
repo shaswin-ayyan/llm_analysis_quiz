@@ -1,0 +1,10 @@
+<!doctype html>
+<title>project2-guard</title>
+<h1>/project2-guard</h1>
+<p><strong>Difficulty:</strong> 4 (next URL only on correct answer)</p>
+<p><strong>Personalized:</strong> No.</p>
+<ol>
+  <li>Write a 3-bullet system prompt that: (a) enforces JSON-only output, (b) refuses PII/personal data, and (c) allows an explicit <code>"unknown"</code> fallback.</li>
+  <li>Submit the prompt text itself (not JSON, not output) in <code>answer</code> with <code>url</code> = <code><span class="origin"></span>/project2-guard</code>.</li>
+</ol>
+<script type="module">for (const el of document.querySelectorAll('.origin')) el.textContent = window.location.origin;</script>

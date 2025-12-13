@@ -1,0 +1,10 @@
+<!doctype html>
+<title>project2-git</title>
+<h1>/project2-git</h1>
+<p><strong>Difficulty:</strong> 1 (next URL revealed even if wrong)</p>
+<p><strong>Personalized:</strong> No.</p>
+<ol>
+  <li>Write the two shell commands to stage only <code>env.sample</code> and commit with message <code>"chore: keep env sample"</code>.</li>
+  <li>Submit the two commands as text (newline or separator is fine) in <code>answer</code> with <code>url</code> = <code><span class="origin"></span>/project2-git</code>. Do not send command output.</li>
+</ol>
+<script type="module">for (const el of document.querySelectorAll('.origin')) el.textContent = window.location.origin;</script>

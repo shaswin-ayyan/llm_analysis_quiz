@@ -2,7 +2,6 @@ import unittest
 import pandas as pd
 import asyncio
 from app.agents.tools import python_execute, sandbox
-from app.agents.sandbox import PythonSandbox
 
 # We need to inject the dataframe into the sandbox globals manually for the test
 # because python_execute doesn't take 'df' argument in the new implementation (it uses sandbox globals)

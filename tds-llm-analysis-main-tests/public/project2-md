@@ -1,0 +1,10 @@
+<!doctype html>
+<title>project2-md</title>
+<h1>/project2-md</h1>
+<p><strong>Difficulty:</strong> 1 (next URL revealed even if wrong)</p>
+<p><strong>Personalized:</strong> No.</p>
+<ol>
+  <li>The correct relative link target is exactly <code>/project2/data-preparation.md</code> (local copy provided).</li>
+  <li>Submit that exact string as <code>answer</code> with <code>url</code> = <code><span class="origin"></span>/project2-md</code>. Do <em>not</em> wrap in Markdown/HTML; send the plain path only.</li>
+</ol>
+<script type="module">for (const el of document.querySelectorAll('.origin')) el.textContent = window.location.origin;</script>

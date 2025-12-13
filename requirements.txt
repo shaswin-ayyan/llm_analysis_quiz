@@ -24,3 +24,9 @@ pydub==0.25.1
 ffmpeg-python==0.2.0
 matplotlib
 openpyxl
+# System Upgrade Dependencies
+langgraph
+e2b-code-interpreter
+litellm>=1.30.0
+instructor>=1.0.0
+openai>=1.0.0  # Force v1+ for litellm compatibility

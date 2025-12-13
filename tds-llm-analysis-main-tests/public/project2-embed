@@ -1,0 +1,11 @@
+<!doctype html>
+<title>project2-embed</title>
+<h1>/project2-embed</h1>
+<p><strong>Difficulty:</strong> 3 (next URL only on correct answer)</p>
+<p><strong>Personalized:</strong> Yes. Use your email length to choose the pair.</p>
+<ol>
+  <li>Open <a href="/project2/embeddings.json">/project2/embeddings.json</a>.</li>
+  <li>If your email length is even, submit IDs <code>s4,s5</code>. If odd, submit IDs <code>s2,s3</code>.</li>
+  <li>Send the two IDs (comma- or space-separated) as plain text in <code>answer</code> with <code>url</code> = <code><span class="origin"></span>/project2-embed</code>. Send IDs only.</li>
+</ol>
+<script type="module">for (const el of document.querySelectorAll('.origin')) el.textContent = window.location.origin;</script>

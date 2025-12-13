@@ -9,7 +9,9 @@ from app.agents.tools.definitions import (
     extract_urls_tool,
     scrape_url_tool,
     extract_archive,
-    sandbox
+    transcribe_audio,
+    download_file,
+    analyze_image
 )
 
 VALID_TOOLS = {
@@ -23,4 +25,7 @@ VALID_TOOLS = {
     "extract_urls": extract_urls_tool,
     "scrape_url": scrape_url_tool,
     "extract_archive": extract_archive,
+    "transcribe_audio": transcribe_audio,
+    "download_file": download_file,
+    "analyze_image": analyze_image,
 }

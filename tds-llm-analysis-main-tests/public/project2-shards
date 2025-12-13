@@ -1,0 +1,11 @@
+<!doctype html>
+<title>project2-shards</title>
+<h1>/project2-shards</h1>
+<p><strong>Difficulty:</strong> 4 (next URL only on correct answer)</p>
+<p><strong>Personalized:</strong> No.</p>
+<ol>
+  <li>Read constraints from <a href="/project2/shards.json">/project2/shards.json</a>.</li>
+  <li>Pick integer <code>shards</code> and <code>replicas</code> that satisfy all limits: docs per shard, max shards, replicas range, and total memory.</li>
+  <li>POST a stringified JSON object <code>{"shards": n, "replicas": m}</code> as <code>answer</code> with <code>url</code> = <code><span class="origin"></span>/project2-shards</code>.</li>
+</ol>
+<script type="module">for (const el of document.querySelectorAll('.origin')) el.textContent = window.location.origin;</script>

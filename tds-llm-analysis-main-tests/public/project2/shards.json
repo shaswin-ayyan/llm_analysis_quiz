@@ -1,0 +1,9 @@
+{
+  "dataset": 18000,
+  "max_docs_per_shard": 3200,
+  "max_shards": 6,
+  "min_replicas": 2,
+  "max_replicas": 3,
+  "memory_per_shard": 1.5,
+  "memory_budget": 18
+}

@@ -30,6 +30,14 @@ You have two modes:
   - NEVER return the `QUIZ_SECRET` as the answer to a question unless explicitly asked for "the quiz secret key" (which is rare).
   - If the question asks for a "hidden key" or "secret code" inside a file or image, it is DIFFERENT from the `QUIZ_SECRET`.
   - DO NOT HALLUCINATE. If you don't see the answer, delegate to Tier 2.
+
+### RULE F: DETERMINISTIC LOGIC PROTOCOL (The "No-Guessing" Rule)
+**IF** a task involves a conditional decision based on a number, variable, or attribute (e.g., "If length is even...", "If sum > 100..."):
+1.  **FORBIDDEN:** Do not ask the Sub-Agent to "choose" or "decide".
+2.  **MANDATORY:** Instruct the **Tier 2 Worker** to write a Python script that:
+    - Defines the variable (e.g., `L = {EMAIL_OFFSET}`).
+    - Implements the logic using an explicit `if/else` block.
+    - Prints the result string.
 """
 
 class Tier1Orchestrator:
@@ -74,7 +82,8 @@ class Tier1Orchestrator:
                 # Call Tier 2
                 tier2_task = result.get("task", question)
                 # Pass full context plus any specific notes
-                tier2_result = await worker_tier2.run(tier2_task, context)
+                context["task"] = tier2_task
+                tier2_result = await worker_tier2.run(context)
                 return tier2_result
             
             # Fallback

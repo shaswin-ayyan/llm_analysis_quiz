@@ -1,0 +1,11 @@
+<!doctype html>
+<title>project2-f1</title>
+<h1>/project2-f1</h1>
+<p><strong>Difficulty:</strong> 5 (final step)</p>
+<p><strong>Personalized:</strong> No.</p>
+<ol>
+  <li>Open <a href="/project2/f1.json">/project2/f1.json</a>.</li>
+  <li>For each run, compute macro-F1 across labels using <code>F1 = 2*tp / (2*tp + fp + fn)</code>, then average the label F1s.</li>
+  <li>Identify the best run. POST <code>{"run_id": "...", "macro_f1": number}</code> with <code>macro_f1</code> rounded to 4 decimals as <code>answer</code> and <code>url</code> = <code><span class="origin"></span>/project2-f1</code>.</li>
+</ol>
+<script type="module">for (const el of document.querySelectorAll('.origin')) el.textContent = window.location.origin;</script>

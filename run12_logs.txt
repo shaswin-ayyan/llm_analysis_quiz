@@ -1,0 +1,532 @@
+Starting Live Test (LangGraph) for 23f1000266@ds.study.iitm.ac.in on https://tds-llm-analysis.s-anand.net/project2...
+
+--- Step 1: https://tds-llm-analysis.s-anand.net/project2 ---
+INFO:app.langgraph_agent:Short Circuit executing...
+Agent Answer: To start Project 2, POST JSON to...
+INFO:httpx:HTTP Request: POST https://tds-llm-analysis.s-anand.net/submit "HTTP/1.1 200 OK"
+[PASS] Correct! Next: https://tds-llm-analysis.s-anand.net/project2-uv?email=23f1000266%40ds.study.iitm.ac.in&id=79887
+
+--- Step 2: https://tds-llm-analysis.s-anand.net/project2-uv?email=23f1000266%40ds.study.iitm.ac.in&id=79887 ---
+INFO:app.langgraph_agent:Data Agent executing...
+INFO:app.agents.extractor_agent:Starting extraction for https://tds-llm-analysis.s-anand.net/project2-uv?email=23f1000266%40ds.study.iitm.ac.in&id=79887 in E:\0 Projects\LLM Analysis Quiz\workspace\files\4c4e1692-0e83-4771-b470-e1971e21d588
+INFO:uvicorn.error:Navigating to https://tds-llm-analysis.s-anand.net/project2-uv?email=23f1000266%40ds.study.iitm.ac.in&id=79887...
+INFO:app.langgraph_agent:DATA AGENT TASK CONTEXT:
+project2-uv
+
+
+/project2-uv
+
+
+Difficulty:
+ 1 (next URL revealed even if wrong)
+
+
+Personalized:
+ Yes (include your email in the URL).
+
+
+
+
+Craft the 
+command string
+ (not the output) using 
+uv http get
+ on 
+https://tds-llm-analysis.s-anand.net
+/project2/uv.json?email=<your email>
+.
+
+
+Include header 
+Accept: application/json
+ (e.g., 
+-H "Accept: application/json"
+).
+
+
+POST that exact command string as 
+answer
+ with 
+url
+ = 
+https://tds-llm-analysis.s-anand.net
+/project2-uv
+.
+INFO:httpx:HTTP Request: POST https://aipipe.org/openrouter/v1/chat/completions "HTTP/1.1 200 OK"
+Agent Answer: uv http get https://tds-llm-analysis.s-anand.net/project2/uv.json?email=23f1000266@ds.study.iitm.ac.in -H "Accept: application/json"
+INFO:httpx:HTTP Request: POST https://tds-llm-analysis.s-anand.net/submit "HTTP/1.1 200 OK"
+[PASS] Correct! Next: https://tds-llm-analysis.s-anand.net/project2-git?email=23f1000266%40ds.study.iitm.ac.in&id=79891
+
+--- Step 3: https://tds-llm-analysis.s-anand.net/project2-git?email=23f1000266%40ds.study.iitm.ac.in&id=79891 ---
+INFO:app.langgraph_agent:Data Agent executing...
+INFO:app.agents.extractor_agent:Starting extraction for https://tds-llm-analysis.s-anand.net/project2-git?email=23f1000266%40ds.study.iitm.ac.in&id=79891 in E:\0 Projects\LLM Analysis Quiz\workspace\files\834ecc80-f435-4221-9a65-361cf34bffe4
+INFO:uvicorn.error:Navigating to https://tds-llm-analysis.s-anand.net/project2-git?email=23f1000266%40ds.study.iitm.ac.in&id=79891...
+INFO:app.langgraph_agent:DATA AGENT TASK CONTEXT:
+project2-git
+
+
+/project2-git
+
+
+Difficulty:
+ 1 (next URL revealed even if wrong)
+
+
+Personalized:
+ No.
+
+
+
+
+Write the two shell commands to stage only 
+env.sample
+ and commit with message 
+"chore: keep env sample"
+.
+
+
+Submit the two commands as text (newline or separator is fine) in 
+answer
+ with 
+url
+ = 
+https://tds-llm-analysis.s-anand.net
+/project2-git
+. Do not send command output.
+INFO:httpx:HTTP Request: POST https://aipipe.org/openrouter/v1/chat/completions "HTTP/1.1 200 OK"
+Agent Answer: git add env.sample && git commit -m "chore: keep env sample"
+INFO:httpx:HTTP Request: POST https://tds-llm-analysis.s-anand.net/submit "HTTP/1.1 200 OK"
+[PASS] Correct! Next: https://tds-llm-analysis.s-anand.net/project2-md?email=23f1000266%40ds.study.iitm.ac.in&id=79897
+
+--- Step 4: https://tds-llm-analysis.s-anand.net/project2-md?email=23f1000266%40ds.study.iitm.ac.in&id=79897 ---
+INFO:app.langgraph_agent:Data Agent executing...
+INFO:app.agents.extractor_agent:Starting extraction for https://tds-llm-analysis.s-anand.net/project2-md?email=23f1000266%40ds.study.iitm.ac.in&id=79897 in E:\0 Projects\LLM Analysis Quiz\workspace\files\81a36402-d52d-4b61-a9ac-079cb4e08aba
+INFO:uvicorn.error:Navigating to https://tds-llm-analysis.s-anand.net/project2-md?email=23f1000266%40ds.study.iitm.ac.in&id=79897...
+INFO:app.langgraph_agent:DATA AGENT TASK CONTEXT:
+project2-md
+
+
+/project2-md
+
+
+Difficulty:
+ 1 (next URL revealed even if wrong)
+
+
+Personalized:
+ No.
+
+
+
+
+The correct relative link target is exactly 
+/project2/data-preparation.md
+ (local copy provided).
+
+
+Submit that exact string as 
+answer
+ with 
+url
+ = 
+https://tds-llm-analysis.s-anand.net
+/project2-md
+. Do 
+not
+ wrap in Markdown/HTML; send the plain path only.
+INFO:httpx:HTTP Request: POST https://aipipe.org/openrouter/v1/chat/completions "HTTP/1.1 200 OK"
+Agent Answer: /project2/data-preparation.md
+INFO:httpx:HTTP Request: POST https://tds-llm-analysis.s-anand.net/submit "HTTP/1.1 200 OK"
+[PASS] Correct! Next: https://tds-llm-analysis.s-anand.net/project2-audio-passphrase?email=23f1000266%40ds.study.iitm.ac.in&id=79903
+
+--- Step 5: https://tds-llm-analysis.s-anand.net/project2-audio-passphrase?email=23f1000266%40ds.study.iitm.ac.in&id=79903 ---
+INFO:app.langgraph_agent:Data Agent executing...
+INFO:app.agents.extractor_agent:Starting extraction for https://tds-llm-analysis.s-anand.net/project2-audio-passphrase?email=23f1000266%40ds.study.iitm.ac.in&id=79903 in E:\0 Projects\LLM Analysis Quiz\workspace\files\1c118e8e-db2c-48f3-b3d8-3169ef51dbce
+INFO:uvicorn.error:Navigating to https://tds-llm-analysis.s-anand.net/project2-audio-passphrase?email=23f1000266%40ds.study.iitm.ac.in&id=79903...
+INFO:app.agents.extractor_agent:Transcribing audio: E:\0 Projects\LLM Analysis Quiz\workspace\files\1c118e8e-db2c-48f3-b3d8-3169ef51dbce\audio-passphrase.opus
+WARNING:app.agents.extractor_agent:Gemini Direct transcription failed: 429. Trying OpenRouter...
+INFO:httpx:HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
+[EXCEPTION] OpenRouter google/gemini-2.0-flash-lite-001: 'charmap' codec can't encode character '\u2192' in position 23: character maps to <undefined>
+INFO:httpx:HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
+[EXCEPTION] OpenRouter google/gemini-2.0-flash-001: 'charmap' codec can't encode character '\u2192' in position 23: character maps to <undefined>
+INFO:httpx:HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 404 Not Found"
+[ERROR OpenRouter] meta-llama/llama-3.3-70b-instruct: 404
+[EXCEPTION] OpenRouter meta-llama/llama-3.3-70b-instruct: All providers failed.
+ERROR:app.agents.extractor_agent:Transcription error: All providers failed.
+INFO:app.langgraph_agent:DATA AGENT TASK CONTEXT:
+project2-audio-passphrase
+
+
+/project2-audio-passphrase
+
+
+Difficulty:
+ 2 (next URL revealed even if wrong)
+
+
+Personalized:
+ No.
+
+
+
+
+Listen to 
+/project2/audio-passphrase.opus
+.
+
+
+Transcribe the spoken phrase (words plus the 3-digit code) in lowercase, spaces allowed.
+
+
+POST the transcription as 
+answer
+ with 
+url
+ = 
+https://tds-llm-analysis.s-anand.net
+/project2-audio-passphrase
+.
+INFO:httpx:HTTP Request: POST https://aipipe.org/openrouter/v1/chat/completions "HTTP/1.1 200 OK"
+INFO:uvicorn.error:Tier 2 executing: python_execute
+INFO:app.agents.sandbox:Executing code in E2B Sandbox...
+INFO:e2b.api:Request POST https://api.e2b.app/sandboxes
+INFO:e2b.api.client_sync:Request: POST https://api.e2b.app/sandboxes
+INFO:e2b.api.client_sync:Response: 201 https://api.e2b.app/sandboxes
+INFO:httpx:HTTP Request: POST https://api.e2b.app/sandboxes "HTTP/1.1 201 Created"
+INFO:e2b.api:Response 201
+INFO:e2b.api.client_sync:Request: POST https://49983-iy36i655dp4kxsgvydp4l.e2b.app/files
+INFO:e2b.api.client_sync:Response: 200 https://49983-iy36i655dp4kxsgvydp4l.e2b.app/files
+INFO:httpx:HTTP Request: POST https://49983-iy36i655dp4kxsgvydp4l.e2b.app/files?path=after.png "HTTP/1.1 200 OK"
+INFO:e2b.api.client_sync:Request: POST https://49983-iy36i655dp4kxsgvydp4l.e2b.app/files
+INFO:e2b.api.client_sync:Response: 200 https://49983-iy36i655dp4kxsgvydp4l.e2b.app/files
+INFO:httpx:HTTP Request: POST https://49983-iy36i655dp4kxsgvydp4l.e2b.app/files?path=audio-passphrase.opus "HTTP/1.1 200 OK"
+INFO:e2b.api.client_sync:Request: POST https://49983-iy36i655dp4kxsgvydp4l.e2b.app/files
+INFO:e2b.api.client_sync:Response: 200 https://49983-iy36i655dp4kxsgvydp4l.e2b.app/files
+INFO:httpx:HTTP Request: POST https://49983-iy36i655dp4kxsgvydp4l.e2b.app/files?path=before.png "HTTP/1.1 200 OK"
+INFO:e2b.api.client_sync:Request: POST https://49983-iy36i655dp4kxsgvydp4l.e2b.app/files
+INFO:e2b.api.client_sync:Response: 200 https://49983-iy36i655dp4kxsgvydp4l.e2b.app/files
+INFO:httpx:HTTP Request: POST https://49983-iy36i655dp4kxsgvydp4l.e2b.app/files?path=f1.json "HTTP/1.1 200 OK"
+INFO:e2b.api.client_sync:Request: POST https://49983-iy36i655dp4kxsgvydp4l.e2b.app/files
+INFO:e2b.api.client_sync:Response: 200 https://49983-iy36i655dp4kxsgvydp4l.e2b.app/files
+INFO:httpx:HTTP Request: POST https://49983-iy36i655dp4kxsgvydp4l.e2b.app/files?path=gh-tree.json "HTTP/1.1 200 OK"
+INFO:e2b.api.client_sync:Request: POST https://49983-iy36i655dp4kxsgvydp4l.e2b.app/files
+INFO:e2b.api.client_sync:Response: 200 https://49983-iy36i655dp4kxsgvydp4l.e2b.app/files
+INFO:httpx:HTTP Request: POST https://49983-iy36i655dp4kxsgvydp4l.e2b.app/files?path=heatmap.png "HTTP/1.1 200 OK"
+INFO:e2b.api.client_sync:Request: POST https://49983-iy36i655dp4kxsgvydp4l.e2b.app/files
+INFO:e2b.api.client_sync:Response: 200 https://49983-iy36i655dp4kxsgvydp4l.e2b.app/files
+INFO:httpx:HTTP Request: POST https://49983-iy36i655dp4kxsgvydp4l.e2b.app/files?path=invoice.pdf "HTTP/1.1 200 OK"
+INFO:e2b.api.client_sync:Request: POST https://49983-iy36i655dp4kxsgvydp4l.e2b.app/files
+INFO:e2b.api.client_sync:Response: 200 https://49983-iy36i655dp4kxsgvydp4l.e2b.app/files
+INFO:httpx:HTTP Request: POST https://49983-iy36i655dp4kxsgvydp4l.e2b.app/files?path=logs.jsonl "HTTP/1.1 200 OK"
+INFO:e2b.api.client_sync:Request: POST https://49983-iy36i655dp4kxsgvydp4l.e2b.app/files
+INFO:e2b.api.client_sync:Response: 200 https://49983-iy36i655dp4kxsgvydp4l.e2b.app/files
+INFO:httpx:HTTP Request: POST https://49983-iy36i655dp4kxsgvydp4l.e2b.app/files?path=logs.zip "HTTP/1.1 200 OK"
+INFO:e2b.api.client_sync:Request: POST https://49983-iy36i655dp4kxsgvydp4l.e2b.app/files
+INFO:e2b.api.client_sync:Response: 200 https://49983-iy36i655dp4kxsgvydp4l.e2b.app/files
+INFO:httpx:HTTP Request: POST https://49983-iy36i655dp4kxsgvydp4l.e2b.app/files?path=messy.csv "HTTP/1.1 200 OK"
+INFO:e2b.api.client_sync:Request: POST https://49983-iy36i655dp4kxsgvydp4l.e2b.app/files
+INFO:e2b.api.client_sync:Response: 200 https://49983-iy36i655dp4kxsgvydp4l.e2b.app/files
+INFO:httpx:HTTP Request: POST https://49983-iy36i655dp4kxsgvydp4l.e2b.app/files?path=orders.csv "HTTP/1.1 200 OK"
+INFO:e2b.api.client_sync:Request: POST https://49983-iy36i655dp4kxsgvydp4l.e2b.app/files
+INFO:e2b.api.client_sync:Response: 200 https://49983-iy36i655dp4kxsgvydp4l.e2b.app/files
+INFO:httpx:HTTP Request: POST https://49983-iy36i655dp4kxsgvydp4l.e2b.app/files?path=project2-git "HTTP/1.1 200 OK"
+INFO:e2b.api.client_sync:Request: POST https://49983-iy36i655dp4kxsgvydp4l.e2b.app/files
+INFO:e2b.api.client_sync:Response: 200 https://49983-iy36i655dp4kxsgvydp4l.e2b.app/files
+INFO:httpx:HTTP Request: POST https://49983-iy36i655dp4kxsgvydp4l.e2b.app/files?path=project2-heatmap "HTTP/1.1 200 OK"
+INFO:e2b.api.client_sync:Request: POST https://49983-iy36i655dp4kxsgvydp4l.e2b.app/files
+INFO:e2b.api.client_sync:Response: 200 https://49983-iy36i655dp4kxsgvydp4l.e2b.app/files
+INFO:httpx:HTTP Request: POST https://49983-iy36i655dp4kxsgvydp4l.e2b.app/files?path=rag.json "HTTP/1.1 200 OK"
+INFO:e2b.api.client_sync:Request: POST https://49983-iy36i655dp4kxsgvydp4l.e2b.app/files
+INFO:e2b.api.client_sync:Response: 200 https://49983-iy36i655dp4kxsgvydp4l.e2b.app/files
+INFO:httpx:HTTP Request: POST https://49983-iy36i655dp4kxsgvydp4l.e2b.app/files?path=rate.json "HTTP/1.1 200 OK"
+INFO:e2b.api.client_sync:Request: POST https://49983-iy36i655dp4kxsgvydp4l.e2b.app/files
+INFO:e2b.api.client_sync:Response: 200 https://49983-iy36i655dp4kxsgvydp4l.e2b.app/files
+INFO:httpx:HTTP Request: POST https://49983-iy36i655dp4kxsgvydp4l.e2b.app/files?path=shards.json "HTTP/1.1 200 OK"
+INFO:e2b.api.client_sync:Request: POST https://49983-iy36i655dp4kxsgvydp4l.e2b.app/files
+INFO:e2b.api.client_sync:Response: 200 https://49983-iy36i655dp4kxsgvydp4l.e2b.app/files
+INFO:httpx:HTTP Request: POST https://49983-iy36i655dp4kxsgvydp4l.e2b.app/files?path=logs.jsonl "HTTP/1.1 200 OK"
+INFO:e2b.api.client_sync:Request: POST https://49983-iy36i655dp4kxsgvydp4l.e2b.app/files
+INFO:e2b.api.client_sync:Response: 200 https://49983-iy36i655dp4kxsgvydp4l.e2b.app/files
+INFO:httpx:HTTP Request: POST https://49983-iy36i655dp4kxsgvydp4l.e2b.app/files?path=logs.jsonl "HTTP/1.1 200 OK"
+INFO:e2b.api.client_sync:Request: POST https://49999-iy36i655dp4kxsgvydp4l.e2b.app/execute
+INFO:e2b.api.client_sync:Response: 200 https://49999-iy36i655dp4kxsgvydp4l.e2b.app/execute
+INFO:httpx:HTTP Request: POST https://49999-iy36i655dp4kxsgvydp4l.e2b.app/execute "HTTP/1.1 200 OK"
+INFO:e2b.api:Request DELETE https://api.e2b.app/sandboxes/iy36i655dp4kxsgvydp4l
+INFO:e2b.api.client_sync:Request: DELETE https://api.e2b.app/sandboxes/iy36i655dp4kxsgvydp4l
+INFO:e2b.api.client_sync:Response: 204 https://api.e2b.app/sandboxes/iy36i655dp4kxsgvydp4l
+INFO:httpx:HTTP Request: DELETE https://api.e2b.app/sandboxes/iy36i655dp4kxsgvydp4l "HTTP/1.1 204 No Content"
+INFO:e2b.api:Response 204
+INFO:uvicorn.error:Tool 'python_execute' output: {'stdout': '\nException: SyntaxError: unterminated string literal (detected at line 13) (413914637.py, line 13)\n  Cell In[1], line 13\n    subprocess.check_call([sys.executable, "-m", "pip", install", package])\n                                                               ^\nSyntaxError: unterminated string literal (detected at line 13)\n'}...
+INFO:httpx:HTTP Request: POST https://aipipe.org/openrouter/v1/chat/completions "HTTP/1.1 200 OK"
+INFO:uvicorn.error:Tier 2 executing: python_execute
+INFO:app.agents.sandbox:Executing code in E2B Sandbox...
+INFO:e2b.api:Request POST https://api.e2b.app/sandboxes
+INFO:e2b.api.client_sync:Request: POST https://api.e2b.app/sandboxes
+INFO:e2b.api.client_sync:Response: 201 https://api.e2b.app/sandboxes
+INFO:httpx:HTTP Request: POST https://api.e2b.app/sandboxes "HTTP/1.1 201 Created"
+INFO:e2b.api:Response 201
+INFO:e2b.api.client_sync:Request: POST https://49983-ilt20vgdpozy7b0ypwfoz.e2b.app/files
+INFO:e2b.api.client_sync:Response: 200 https://49983-ilt20vgdpozy7b0ypwfoz.e2b.app/files
+INFO:httpx:HTTP Request: POST https://49983-ilt20vgdpozy7b0ypwfoz.e2b.app/files?path=after.png "HTTP/1.1 200 OK"
+INFO:e2b.api.client_sync:Request: POST https://49983-ilt20vgdpozy7b0ypwfoz.e2b.app/files
+INFO:e2b.api.client_sync:Response: 200 https://49983-ilt20vgdpozy7b0ypwfoz.e2b.app/files
+INFO:httpx:HTTP Request: POST https://49983-ilt20vgdpozy7b0ypwfoz.e2b.app/files?path=audio-passphrase.opus "HTTP/1.1 200 OK"
+INFO:e2b.api.client_sync:Request: POST https://49983-ilt20vgdpozy7b0ypwfoz.e2b.app/files
+INFO:e2b.api.client_sync:Response: 200 https://49983-ilt20vgdpozy7b0ypwfoz.e2b.app/files
+INFO:httpx:HTTP Request: POST https://49983-ilt20vgdpozy7b0ypwfoz.e2b.app/files?path=before.png "HTTP/1.1 200 OK"
+INFO:e2b.api.client_sync:Request: POST https://49983-ilt20vgdpozy7b0ypwfoz.e2b.app/files
+INFO:e2b.api.client_sync:Response: 200 https://49983-ilt20vgdpozy7b0ypwfoz.e2b.app/files
+INFO:httpx:HTTP Request: POST https://49983-ilt20vgdpozy7b0ypwfoz.e2b.app/files?path=f1.json "HTTP/1.1 200 OK"
+INFO:e2b.api.client_sync:Request: POST https://49983-ilt20vgdpozy7b0ypwfoz.e2b.app/files
+INFO:e2b.api.client_sync:Response: 200 https://49983-ilt20vgdpozy7b0ypwfoz.e2b.app/files
+INFO:httpx:HTTP Request: POST https://49983-ilt20vgdpozy7b0ypwfoz.e2b.app/files?path=gh-tree.json "HTTP/1.1 200 OK"
+INFO:e2b.api.client_sync:Request: POST https://49983-ilt20vgdpozy7b0ypwfoz.e2b.app/files
+INFO:e2b.api.client_sync:Response: 200 https://49983-ilt20vgdpozy7b0ypwfoz.e2b.app/files
+INFO:httpx:HTTP Request: POST https://49983-ilt20vgdpozy7b0ypwfoz.e2b.app/files?path=heatmap.png "HTTP/1.1 200 OK"
+INFO:e2b.api.client_sync:Request: POST https://49983-ilt20vgdpozy7b0ypwfoz.e2b.app/files
+INFO:e2b.api.client_sync:Response: 200 https://49983-ilt20vgdpozy7b0ypwfoz.e2b.app/files
+INFO:httpx:HTTP Request: POST https://49983-ilt20vgdpozy7b0ypwfoz.e2b.app/files?path=invoice.pdf "HTTP/1.1 200 OK"
+INFO:e2b.api.client_sync:Request: POST https://49983-ilt20vgdpozy7b0ypwfoz.e2b.app/files
+INFO:e2b.api.client_sync:Response: 200 https://49983-ilt20vgdpozy7b0ypwfoz.e2b.app/files
+INFO:httpx:HTTP Request: POST https://49983-ilt20vgdpozy7b0ypwfoz.e2b.app/files?path=logs.jsonl "HTTP/1.1 200 OK"
+INFO:e2b.api.client_sync:Request: POST https://49983-ilt20vgdpozy7b0ypwfoz.e2b.app/files
+INFO:e2b.api.client_sync:Response: 200 https://49983-ilt20vgdpozy7b0ypwfoz.e2b.app/files
+INFO:httpx:HTTP Request: POST https://49983-ilt20vgdpozy7b0ypwfoz.e2b.app/files?path=logs.zip "HTTP/1.1 200 OK"
+INFO:e2b.api.client_sync:Request: POST https://49983-ilt20vgdpozy7b0ypwfoz.e2b.app/files
+INFO:e2b.api.client_sync:Response: 200 https://49983-ilt20vgdpozy7b0ypwfoz.e2b.app/files
+INFO:httpx:HTTP Request: POST https://49983-ilt20vgdpozy7b0ypwfoz.e2b.app/files?path=messy.csv "HTTP/1.1 200 OK"
+INFO:e2b.api.client_sync:Request: POST https://49983-ilt20vgdpozy7b0ypwfoz.e2b.app/files
+INFO:e2b.api.client_sync:Response: 200 https://49983-ilt20vgdpozy7b0ypwfoz.e2b.app/files
+INFO:httpx:HTTP Request: POST https://49983-ilt20vgdpozy7b0ypwfoz.e2b.app/files?path=orders.csv "HTTP/1.1 200 OK"
+INFO:e2b.api.client_sync:Request: POST https://49983-ilt20vgdpozy7b0ypwfoz.e2b.app/files
+INFO:e2b.api.client_sync:Response: 200 https://49983-ilt20vgdpozy7b0ypwfoz.e2b.app/files
+INFO:httpx:HTTP Request: POST https://49983-ilt20vgdpozy7b0ypwfoz.e2b.app/files?path=project2-git "HTTP/1.1 200 OK"
+INFO:e2b.api.client_sync:Request: POST https://49983-ilt20vgdpozy7b0ypwfoz.e2b.app/files
+INFO:e2b.api.client_sync:Response: 200 https://49983-ilt20vgdpozy7b0ypwfoz.e2b.app/files
+INFO:httpx:HTTP Request: POST https://49983-ilt20vgdpozy7b0ypwfoz.e2b.app/files?path=project2-heatmap "HTTP/1.1 200 OK"
+INFO:e2b.api.client_sync:Request: POST https://49983-ilt20vgdpozy7b0ypwfoz.e2b.app/files
+INFO:e2b.api.client_sync:Response: 200 https://49983-ilt20vgdpozy7b0ypwfoz.e2b.app/files
+INFO:httpx:HTTP Request: POST https://49983-ilt20vgdpozy7b0ypwfoz.e2b.app/files?path=rag.json "HTTP/1.1 200 OK"
+INFO:e2b.api.client_sync:Request: POST https://49983-ilt20vgdpozy7b0ypwfoz.e2b.app/files
+INFO:e2b.api.client_sync:Response: 200 https://49983-ilt20vgdpozy7b0ypwfoz.e2b.app/files
+INFO:httpx:HTTP Request: POST https://49983-ilt20vgdpozy7b0ypwfoz.e2b.app/files?path=rate.json "HTTP/1.1 200 OK"
+INFO:e2b.api.client_sync:Request: POST https://49983-ilt20vgdpozy7b0ypwfoz.e2b.app/files
+INFO:e2b.api.client_sync:Response: 200 https://49983-ilt20vgdpozy7b0ypwfoz.e2b.app/files
+INFO:httpx:HTTP Request: POST https://49983-ilt20vgdpozy7b0ypwfoz.e2b.app/files?path=shards.json "HTTP/1.1 200 OK"
+INFO:e2b.api.client_sync:Request: POST https://49983-ilt20vgdpozy7b0ypwfoz.e2b.app/files
+INFO:e2b.api.client_sync:Response: 200 https://49983-ilt20vgdpozy7b0ypwfoz.e2b.app/files
+INFO:httpx:HTTP Request: POST https://49983-ilt20vgdpozy7b0ypwfoz.e2b.app/files?path=logs.jsonl "HTTP/1.1 200 OK"
+INFO:e2b.api.client_sync:Request: POST https://49983-ilt20vgdpozy7b0ypwfoz.e2b.app/files
+INFO:e2b.api.client_sync:Response: 200 https://49983-ilt20vgdpozy7b0ypwfoz.e2b.app/files
+INFO:httpx:HTTP Request: POST https://49983-ilt20vgdpozy7b0ypwfoz.e2b.app/files?path=logs.jsonl "HTTP/1.1 200 OK"
+INFO:e2b.api.client_sync:Request: POST https://49999-ilt20vgdpozy7b0ypwfoz.e2b.app/execute
+INFO:e2b.api.client_sync:Response: 200 https://49999-ilt20vgdpozy7b0ypwfoz.e2b.app/execute
+INFO:httpx:HTTP Request: POST https://49999-ilt20vgdpozy7b0ypwfoz.e2b.app/execute "HTTP/1.1 200 OK"
+INFO:e2b.api:Request DELETE https://api.e2b.app/sandboxes/ilt20vgdpozy7b0ypwfoz
+INFO:e2b.api.client_sync:Request: DELETE https://api.e2b.app/sandboxes/ilt20vgdpozy7b0ypwfoz
+INFO:e2b.api.client_sync:Response: 204 https://api.e2b.app/sandboxes/ilt20vgdpozy7b0ypwfoz
+INFO:httpx:HTTP Request: DELETE https://api.e2b.app/sandboxes/ilt20vgdpozy7b0ypwfoz "HTTP/1.1 204 No Content"
+INFO:e2b.api:Response 204
+INFO:uvicorn.error:Tool 'python_execute' output: {'stdout': "\nException: ModuleNotFoundError: No module named 'pydub'\n---------------------------------------------------------------------------ModuleNotFoundError                       Traceback (most recent call last)Cell In[1], line 9\n      7 import sys\n      8 import requests\n----> 9 from pydub import AudioSegment\n     10 import speech_recognition as sr\n     12 def install(package):\nModuleNotFoundError: No module named 'pydub'"}...
+INFO:httpx:HTTP Request: POST https://aipipe.org/openrouter/v1/chat/completions "HTTP/1.1 200 OK"
+INFO:uvicorn.error:Tier 2 executing: python_execute
+INFO:app.agents.sandbox:Executing code in E2B Sandbox...
+INFO:e2b.api:Request POST https://api.e2b.app/sandboxes
+INFO:e2b.api.client_sync:Request: POST https://api.e2b.app/sandboxes
+INFO:e2b.api.client_sync:Response: 201 https://api.e2b.app/sandboxes
+INFO:httpx:HTTP Request: POST https://api.e2b.app/sandboxes "HTTP/1.1 201 Created"
+INFO:e2b.api:Response 201
+INFO:e2b.api.client_sync:Request: POST https://49983-ixay235yesanh0q2ghbig.e2b.app/files
+INFO:e2b.api.client_sync:Response: 200 https://49983-ixay235yesanh0q2ghbig.e2b.app/files
+INFO:httpx:HTTP Request: POST https://49983-ixay235yesanh0q2ghbig.e2b.app/files?path=after.png "HTTP/1.1 200 OK"
+INFO:e2b.api.client_sync:Request: POST https://49983-ixay235yesanh0q2ghbig.e2b.app/files
+INFO:e2b.api.client_sync:Response: 200 https://49983-ixay235yesanh0q2ghbig.e2b.app/files
+INFO:httpx:HTTP Request: POST https://49983-ixay235yesanh0q2ghbig.e2b.app/files?path=audio-passphrase.opus "HTTP/1.1 200 OK"
+INFO:e2b.api.client_sync:Request: POST https://49983-ixay235yesanh0q2ghbig.e2b.app/files
+INFO:e2b.api.client_sync:Response: 200 https://49983-ixay235yesanh0q2ghbig.e2b.app/files
+INFO:httpx:HTTP Request: POST https://49983-ixay235yesanh0q2ghbig.e2b.app/files?path=before.png "HTTP/1.1 200 OK"
+INFO:e2b.api.client_sync:Request: POST https://49983-ixay235yesanh0q2ghbig.e2b.app/files
+INFO:e2b.api.client_sync:Response: 200 https://49983-ixay235yesanh0q2ghbig.e2b.app/files
+INFO:httpx:HTTP Request: POST https://49983-ixay235yesanh0q2ghbig.e2b.app/files?path=f1.json "HTTP/1.1 200 OK"
+INFO:e2b.api.client_sync:Request: POST https://49983-ixay235yesanh0q2ghbig.e2b.app/files
+INFO:e2b.api.client_sync:Response: 200 https://49983-ixay235yesanh0q2ghbig.e2b.app/files
+INFO:httpx:HTTP Request: POST https://49983-ixay235yesanh0q2ghbig.e2b.app/files?path=gh-tree.json "HTTP/1.1 200 OK"
+INFO:e2b.api.client_sync:Request: POST https://49983-ixay235yesanh0q2ghbig.e2b.app/files
+INFO:e2b.api.client_sync:Response: 200 https://49983-ixay235yesanh0q2ghbig.e2b.app/files
+INFO:httpx:HTTP Request: POST https://49983-ixay235yesanh0q2ghbig.e2b.app/files?path=heatmap.png "HTTP/1.1 200 OK"
+INFO:e2b.api.client_sync:Request: POST https://49983-ixay235yesanh0q2ghbig.e2b.app/files
+INFO:e2b.api.client_sync:Response: 200 https://49983-ixay235yesanh0q2ghbig.e2b.app/files
+INFO:httpx:HTTP Request: POST https://49983-ixay235yesanh0q2ghbig.e2b.app/files?path=invoice.pdf "HTTP/1.1 200 OK"
+INFO:e2b.api.client_sync:Request: POST https://49983-ixay235yesanh0q2ghbig.e2b.app/files
+INFO:e2b.api.client_sync:Response: 200 https://49983-ixay235yesanh0q2ghbig.e2b.app/files
+INFO:httpx:HTTP Request: POST https://49983-ixay235yesanh0q2ghbig.e2b.app/files?path=logs.jsonl "HTTP/1.1 200 OK"
+INFO:e2b.api.client_sync:Request: POST https://49983-ixay235yesanh0q2ghbig.e2b.app/files
+INFO:e2b.api.client_sync:Response: 200 https://49983-ixay235yesanh0q2ghbig.e2b.app/files
+INFO:httpx:HTTP Request: POST https://49983-ixay235yesanh0q2ghbig.e2b.app/files?path=logs.zip "HTTP/1.1 200 OK"
+INFO:e2b.api.client_sync:Request: POST https://49983-ixay235yesanh0q2ghbig.e2b.app/files
+INFO:e2b.api.client_sync:Response: 200 https://49983-ixay235yesanh0q2ghbig.e2b.app/files
+INFO:httpx:HTTP Request: POST https://49983-ixay235yesanh0q2ghbig.e2b.app/files?path=messy.csv "HTTP/1.1 200 OK"
+INFO:e2b.api.client_sync:Request: POST https://49983-ixay235yesanh0q2ghbig.e2b.app/files
+INFO:e2b.api.client_sync:Response: 200 https://49983-ixay235yesanh0q2ghbig.e2b.app/files
+INFO:httpx:HTTP Request: POST https://49983-ixay235yesanh0q2ghbig.e2b.app/files?path=orders.csv "HTTP/1.1 200 OK"
+INFO:e2b.api.client_sync:Request: POST https://49983-ixay235yesanh0q2ghbig.e2b.app/files
+INFO:e2b.api.client_sync:Response: 200 https://49983-ixay235yesanh0q2ghbig.e2b.app/files
+INFO:httpx:HTTP Request: POST https://49983-ixay235yesanh0q2ghbig.e2b.app/files?path=project2-git "HTTP/1.1 200 OK"
+INFO:e2b.api.client_sync:Request: POST https://49983-ixay235yesanh0q2ghbig.e2b.app/files
+INFO:e2b.api.client_sync:Response: 200 https://49983-ixay235yesanh0q2ghbig.e2b.app/files
+INFO:httpx:HTTP Request: POST https://49983-ixay235yesanh0q2ghbig.e2b.app/files?path=project2-heatmap "HTTP/1.1 200 OK"
+INFO:e2b.api.client_sync:Request: POST https://49983-ixay235yesanh0q2ghbig.e2b.app/files
+INFO:e2b.api.client_sync:Response: 200 https://49983-ixay235yesanh0q2ghbig.e2b.app/files
+INFO:httpx:HTTP Request: POST https://49983-ixay235yesanh0q2ghbig.e2b.app/files?path=rag.json "HTTP/1.1 200 OK"
+INFO:e2b.api.client_sync:Request: POST https://49983-ixay235yesanh0q2ghbig.e2b.app/files
+INFO:e2b.api.client_sync:Response: 200 https://49983-ixay235yesanh0q2ghbig.e2b.app/files
+INFO:httpx:HTTP Request: POST https://49983-ixay235yesanh0q2ghbig.e2b.app/files?path=rate.json "HTTP/1.1 200 OK"
+INFO:e2b.api.client_sync:Request: POST https://49983-ixay235yesanh0q2ghbig.e2b.app/files
+INFO:e2b.api.client_sync:Response: 200 https://49983-ixay235yesanh0q2ghbig.e2b.app/files
+INFO:httpx:HTTP Request: POST https://49983-ixay235yesanh0q2ghbig.e2b.app/files?path=shards.json "HTTP/1.1 200 OK"
+INFO:e2b.api.client_sync:Request: POST https://49983-ixay235yesanh0q2ghbig.e2b.app/files
+INFO:e2b.api.client_sync:Response: 200 https://49983-ixay235yesanh0q2ghbig.e2b.app/files
+INFO:httpx:HTTP Request: POST https://49983-ixay235yesanh0q2ghbig.e2b.app/files?path=logs.jsonl "HTTP/1.1 200 OK"
+INFO:e2b.api.client_sync:Request: POST https://49983-ixay235yesanh0q2ghbig.e2b.app/files
+INFO:e2b.api.client_sync:Response: 200 https://49983-ixay235yesanh0q2ghbig.e2b.app/files
+INFO:httpx:HTTP Request: POST https://49983-ixay235yesanh0q2ghbig.e2b.app/files?path=logs.jsonl "HTTP/1.1 200 OK"
+INFO:e2b.api.client_sync:Request: POST https://49999-ixay235yesanh0q2ghbig.e2b.app/execute
+INFO:e2b.api.client_sync:Response: 200 https://49999-ixay235yesanh0q2ghbig.e2b.app/execute
+INFO:httpx:HTTP Request: POST https://49999-ixay235yesanh0q2ghbig.e2b.app/execute "HTTP/1.1 200 OK"
+INFO:e2b.api:Request DELETE https://api.e2b.app/sandboxes/ixay235yesanh0q2ghbig
+INFO:e2b.api.client_sync:Request: DELETE https://api.e2b.app/sandboxes/ixay235yesanh0q2ghbig
+INFO:e2b.api.client_sync:Response: 204 https://api.e2b.app/sandboxes/ixay235yesanh0q2ghbig
+INFO:httpx:HTTP Request: DELETE https://api.e2b.app/sandboxes/ixay235yesanh0q2ghbig "HTTP/1.1 204 No Content"
+INFO:e2b.api:Response 204
+INFO:uvicorn.error:Tool 'python_execute' output: {'stdout': 'Collecting pydub\n  Downloading pydub-0.25.1-py2.py3-none-any.whl.metadata (1.4 kB)\nDownloading pydub-0.25.1-py2.py3-none-any.whl (32 kB)\n\nInstalling collected packages: pydub\nSuccessfully installed pydub-0.25.1\n\nCollecting SpeechRecognition\n  Downloading speechrecognition-3.14.4-py3-none-any.whl.metadata (30 kB)\nRequirement already satisfied: typing-extensions in /usr/local/lib/python3.12/site-packages (from SpeechRecognition) (4.15.0)\nDownloading speechrecognition-3.14.4-p...
+Traceback (most recent call last):
+  File "C:\Users\Admin\AppData\Local\Programs\Python\Python313\Lib\asyncio\runners.py", line 118, in run
+    return self._loop.run_until_complete(task)
+           ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^
+  File "C:\Users\Admin\AppData\Local\Programs\Python\Python313\Lib\asyncio\base_events.py", line 725, in run_until_complete
+    return future.result()
+           ~~~~~~~~~~~~~^^
+  File "E:\0 Projects\LLM Analysis Quiz\live_test_agent.py", line 115, in main
+    history = await run_loop(start_url, email, secret)
+              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "E:\0 Projects\LLM Analysis Quiz\live_test_agent.py", line 31, in run_loop
+    result = await graph_app.ainvoke(initial_state)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Admin\AppData\Local\Programs\Python\Python313\Lib\site-packages\langgraph\pregel\main.py", line 3158, in ainvoke
+    async for chunk in self.astream(
+    ...<29 lines>...
+            chunks.append(chunk)
+  File "C:\Users\Admin\AppData\Local\Programs\Python\Python313\Lib\site-packages\langgraph\pregel\main.py", line 2971, in astream
+    async for _ in runner.atick(
+    ...<13 lines>...
+            yield o
+  File "C:\Users\Admin\AppData\Local\Programs\Python\Python313\Lib\site-packages\langgraph\pregel\_runner.py", line 304, in atick
+    await arun_with_retry(
+    ...<15 lines>...
+    )
+  File "C:\Users\Admin\AppData\Local\Programs\Python\Python313\Lib\site-packages\langgraph\pregel\_retry.py", line 137, in arun_with_retry
+    return await task.proc.ainvoke(task.input, config)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Admin\AppData\Local\Programs\Python\Python313\Lib\site-packages\langgraph\_internal\_runnable.py", line 705, in ainvoke
+    input = await asyncio.create_task(
+            ^^^^^^^^^^^^^^^^^^^^^^^^^^
+        step.ainvoke(input, config, **kwargs), context=context
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "C:\Users\Admin\AppData\Local\Programs\Python\Python313\Lib\site-packages\langgraph\_internal\_runnable.py", line 473, in ainvoke
+    ret = await self.afunc(*args, **kwargs)
+          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "E:\0 Projects\LLM Analysis Quiz\app\langgraph_agent.py", line 136, in node_data_agent
+    result = await worker_tier2.run(context)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "E:\0 Projects\LLM Analysis Quiz\app\agents\tier2_worker.py", line 213, in run
+    response = await self._call_llm(messages)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "E:\0 Projects\LLM Analysis Quiz\app\agents\tier2_worker.py", line 271, in _call_llm
+    response = await self.client.post(url, json=payload, headers=headers)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Admin\AppData\Local\Programs\Python\Python313\Lib\site-packages\httpx\_client.py", line 1859, in post
+    return await self.request(
+           ^^^^^^^^^^^^^^^^^^^
+    ...<13 lines>...
+    )
+    ^
+  File "C:\Users\Admin\AppData\Local\Programs\Python\Python313\Lib\site-packages\httpx\_client.py", line 1540, in request
+    return await self.send(request, auth=auth, follow_redirects=follow_redirects)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Admin\AppData\Local\Programs\Python\Python313\Lib\site-packages\httpx\_client.py", line 1629, in send
+    response = await self._send_handling_auth(
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    ...<4 lines>...
+    )
+    ^
+  File "C:\Users\Admin\AppData\Local\Programs\Python\Python313\Lib\site-packages\httpx\_client.py", line 1657, in _send_handling_auth
+    response = await self._send_handling_redirects(
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    ...<3 lines>...
+    )
+    ^
+  File "C:\Users\Admin\AppData\Local\Programs\Python\Python313\Lib\site-packages\httpx\_client.py", line 1694, in _send_handling_redirects
+    response = await self._send_single_request(request)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Admin\AppData\Local\Programs\Python\Python313\Lib\site-packages\httpx\_client.py", line 1730, in _send_single_request
+    response = await transport.handle_async_request(request)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Admin\AppData\Local\Programs\Python\Python313\Lib\site-packages\httpx\_transports\default.py", line 394, in handle_async_request
+    resp = await self._pool.handle_async_request(req)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Admin\AppData\Local\Programs\Python\Python313\Lib\site-packages\httpcore\_async\connection_pool.py", line 256, in handle_async_request
+    raise exc from None
+  File "C:\Users\Admin\AppData\Local\Programs\Python\Python313\Lib\site-packages\httpcore\_async\connection_pool.py", line 236, in handle_async_request
+    response = await connection.handle_async_request(
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+        pool_request.request
+        ^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "C:\Users\Admin\AppData\Local\Programs\Python\Python313\Lib\site-packages\httpcore\_async\connection.py", line 103, in handle_async_request
+    return await self._connection.handle_async_request(request)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Admin\AppData\Local\Programs\Python\Python313\Lib\site-packages\httpcore\_async\http11.py", line 136, in handle_async_request
+    raise exc
+  File "C:\Users\Admin\AppData\Local\Programs\Python\Python313\Lib\site-packages\httpcore\_async\http11.py", line 106, in handle_async_request
+    ) = await self._receive_response_headers(**kwargs)
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Admin\AppData\Local\Programs\Python\Python313\Lib\site-packages\httpcore\_async\http11.py", line 177, in _receive_response_headers
+    event = await self._receive_event(timeout=timeout)
+            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Admin\AppData\Local\Programs\Python\Python313\Lib\site-packages\httpcore\_async\http11.py", line 217, in _receive_event
+    data = await self._network_stream.read(
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+        self.READ_NUM_BYTES, timeout=timeout
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "C:\Users\Admin\AppData\Local\Programs\Python\Python313\Lib\site-packages\httpcore\_backends\anyio.py", line 35, in read
+    return await self._stream.receive(max_bytes=max_bytes)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Admin\AppData\Local\Programs\Python\Python313\Lib\site-packages\anyio\streams\tls.py", line 237, in receive
+    data = await self._call_sslobject_method(self._ssl_object.read, max_bytes)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Admin\AppData\Local\Programs\Python\Python313\Lib\site-packages\anyio\streams\tls.py", line 180, in _call_sslobject_method
+    data = await self.transport_stream.receive()
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Admin\AppData\Local\Programs\Python\Python313\Lib\site-packages\anyio\_backends\_asyncio.py", line 1263, in receive
+    await self._protocol.read_event.wait()
+  File "C:\Users\Admin\AppData\Local\Programs\Python\Python313\Lib\asyncio\locks.py", line 213, in wait
+    await fut
+asyncio.exceptions.CancelledError
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "E:\0 Projects\LLM Analysis Quiz\live_test_agent.py", line 139, in <module>
+    asyncio.run(main())
+    ~~~~~~~~~~~^^^^^^^^
+  File "C:\Users\Admin\AppData\Local\Programs\Python\Python313\Lib\asyncio\runners.py", line 195, in run
+    return runner.run(main)
+           ~~~~~~~~~~^^^^^^
+  File "C:\Users\Admin\AppData\Local\Programs\Python\Python313\Lib\asyncio\runners.py", line 123, in run
+    raise KeyboardInterrupt()
+KeyboardInterrupt

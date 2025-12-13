@@ -1,0 +1,11 @@
+<!doctype html>
+<title>project2-chart</title>
+<h1>/project2-chart</h1>
+<p><strong>Difficulty:</strong> 2 (next URL revealed even if wrong)</p>
+<p><strong>Personalized:</strong> No.</p>
+<ol>
+  <li>Scenario: A time-series with three categories that should show cumulative contributions. Choose the best chart type.</li>
+  <li>Respond with a single letter: A = line, B = stacked area, C = scatter.</li>
+  <li>POST that letter as <code>answer</code> with <code>url</code> = <code><span class="origin"></span>/project2-chart</code>.</li>
+</ol>
+<script type="module">for (const el of document.querySelectorAll('.origin')) el.textContent = window.location.origin;</script>

@@ -1,0 +1,6 @@
+[
+  {"run_id": "runA", "metrics": {"x": {"tp": 8, "fp": 2, "fn": 2}, "y": {"tp": 5, "fp": 3, "fn": 5}}},
+  {"run_id": "runB", "metrics": {"x": {"tp": 9, "fp": 1, "fn": 1}, "y": {"tp": 6, "fp": 4, "fn": 3}}},
+  {"run_id": "runC", "metrics": {"x": {"tp": 7, "fp": 1, "fn": 3}, "y": {"tp": 9, "fp": 2, "fn": 1}}},
+  {"run_id": "runD", "metrics": {"x": {"tp": 6, "fp": 3, "fn": 2}, "y": {"tp": 4, "fp": 2, "fn": 1}}}
+]

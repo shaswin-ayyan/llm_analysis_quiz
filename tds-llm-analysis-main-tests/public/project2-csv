@@ -1,0 +1,11 @@
+<!doctype html>
+<title>project2-csv</title>
+<h1>/project2-csv</h1>
+<p><strong>Difficulty:</strong> 2 (next URL revealed even if wrong)</p>
+<p><strong>Personalized:</strong> No.</p>
+<ol>
+  <li>Download <a href="/project2/messy.csv">/project2/messy.csv</a>.</li>
+  <li>Normalize to JSON: snake_case keys (<code>id</code>, <code>name</code>, <code>joined</code>, <code>value</code>), ISO-8601 dates, integer values, sorted by <code>id</code> ascending.</li>
+  <li>POST the JSON array as a string <code>answer</code> with <code>url</code> = <code><span class="origin"></span>/project2-csv</code>.</li>
+</ol>
+<script type="module">for (const el of document.querySelectorAll('.origin')) el.textContent = window.location.origin;</script>

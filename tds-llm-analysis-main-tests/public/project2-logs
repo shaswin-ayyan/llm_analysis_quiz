@@ -1,0 +1,11 @@
+<!doctype html>
+<title>project2-logs</title>
+<h1>/project2-logs</h1>
+<p><strong>Difficulty:</strong> 2 (next URL revealed even if wrong)</p>
+<p><strong>Personalized:</strong> Yes. Add an offset based on your email length.</p>
+<ol>
+  <li>Download <a href="/project2/logs.zip">/project2/logs.zip</a> and sum <code>bytes</code> where <code>event=="download"</code>.</li>
+  <li>Compute <code>offset = (length of your email) mod 5</code>. Final answer = base sum + offset.</li>
+  <li>Submit the final integer as <code>answer</code> with <code>url</code> = <code><span class="origin"></span>/project2-logs</code>. Send the number only.</li>
+</ol>
+<script type="module">for (const el of document.querySelectorAll('.origin')) el.textContent = window.location.origin;</script>

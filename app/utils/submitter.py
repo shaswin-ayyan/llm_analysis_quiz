@@ -1,32 +1,45 @@
-# app/utils/submitter.py
 import logging
+import os
+from typing import Any
 import httpx
-from typing import Optional, Any, Dict
+from urllib.parse import urlparse
 
 logger = logging.getLogger("uvicorn.error")
 
-
-async def submit_answer(
-    submit_url: str, payload: Dict[str, Any], timeout: int = 20
-) -> Optional[Dict[str, Any]]:
+async def submit_answer(question_url: str, email: str, secret: str, answer: Any) -> dict:
     """
-    Post the payload to the quiz submit endpoint.
-    Expects JSON response; returns parsed JSON or None on failure.
+    Submit answer to the quiz server.
+    
+    Returns:
+        dict with keys: correct, message, url (next URL), delay
     """
-    headers = {"Content-Type": "application/json"}
+    logger.info("Submitting...")
+    
+    # Extract base URL
+    parsed = urlparse(question_url)
+    submit_base = f"{parsed.scheme}://{parsed.netloc}"
+    submit_url = os.getenv("SUBMIT_URL")
+    
+    if not submit_url:
+        submit_url = f"{submit_base}/submit"
+        logger.info(f"Submit URL missing, guessing: {submit_url}")
+    
+    payload = {
+        "url": question_url,
+        "email": email,
+        "secret": secret,
+        "answer": answer
+    }
+    
     try:
-        async with httpx.AsyncClient(timeout=timeout) as client:
-            resp = await client.post(submit_url, json=payload, headers=headers)
-            try:
-                data = resp.json()
-            except Exception:
-                data = {"text": resp.text}
-
-            if resp.status_code >= 400:
-                logger.error(f"Submit failed {resp.status_code}: {resp.text}")
-                data.setdefault("correct", False)
-                data.setdefault("status_code", resp.status_code)
+        async with httpx.AsyncClient(timeout=30.0) as client:
+            response = await client.post(submit_url, json=payload)
+            response.raise_for_status()
+            data = response.json()
+            
+            # Return full response for intelligent retry logic
             return data
+            
     except Exception as e:
-        logger.exception(f"submit_answer raised exception: {e}")
-        return None
+        logger.error(f"Submission error: {e}")
+        return {"correct": False, "message": str(e), "url": None}

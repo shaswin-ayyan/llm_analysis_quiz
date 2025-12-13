@@ -1,0 +1,23 @@
+{
+  "name": "tds-llm-analysis",
+  "version": "1.0.0",
+  "private": true,
+  "scripts": {
+    "deploy": "wrangler deploy",
+    "dev": "wrangler dev",
+    "lint": "dprint fmt && npx tsc && npx -y oxlint --fix",
+    "prepublishOnly": "npm run lint",
+    "test": "WRANGLER_LOG_PATH=.wrangler-logs WRANGLER_LOG=none vitest"
+  },
+  "prettier": {
+    "printWidth": 120
+  },
+  "type": "module",
+  "devDependencies": {
+    "@cloudflare/vitest-pool-workers": "^0.10.4",
+    "@types/node": "^20.19.24",
+    "typescript": "^5.9.3",
+    "vitest": "~3.2.0",
+    "wrangler": "^4.45.3"
+  }
+}

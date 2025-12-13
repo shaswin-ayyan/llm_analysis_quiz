@@ -1,0 +1,8 @@
+{
+  "pages": 1800,
+  "items_per_page": 50,
+  "per_minute": 120,
+  "per_hour": 1600,
+  "retry_after_seconds": 30,
+  "retry_every": 300
+}

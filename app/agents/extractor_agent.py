@@ -90,7 +90,7 @@ class ExtractorAgent:
                 payload = {
                     "contents": [{
                         "parts": [
-                            {"text": "Transcribe this audio file exactly."},
+                            {"text": "Transcribe this audio file exactly. If there are numbers, write them as digits (e.g., '219' not 'two one nine')."},
                             {
                                 "inline_data": {
                                     "mime_type": mime_type,
@@ -134,7 +134,7 @@ class ExtractorAgent:
                         {
                             "role": "user",
                             "content": [
-                                {"type": "text", "text": "Transcribe this audio file exactly."},
+                                {"type": "text", "text": "Transcribe this audio file exactly. If there are numbers, write them as digits (e.g., '219' not 'two one nine')."},
                                 {
                                     "type": "image_url", 
                                     "image_url": {
@@ -165,40 +165,36 @@ class ExtractorAgent:
         soup = BeautifulSoup(html, "html.parser")
         submit_url = None
 
-        # 1. Form Action
-        for form in soup.find_all("form", action=True):
-            action = form["action"].strip()
-            if "submit" in action.lower() or action.startswith("http"):
+        # 1. Priority: Form with method="POST"
+        for form in soup.find_all("form"):
+            method = form.get("method", "").upper()
+            action = form.get("action", "").strip()
+            if method == "POST" and action:
                 submit_url = urljoin(current_url, action)
-                logger.info(f"Found submit URL via form: {submit_url}")
+                logger.info(f"Found submit URL via POST form: {submit_url}")
                 return submit_url
 
-        # 2. Check links (already passed in, but let's re-verify with soup to be safe/consistent)
-        for a in soup.find_all("a", href=True):
-            href = a["href"].strip()
-            if "submit" in href.lower():
+        # 2. Priority: Keywords in links/buttons
+        # Expanded keywords beyond just "submit"
+        keywords = ["submit", "upload", "complete", "finish", "send", "next"]
+        
+        for a in soup.find_all(["a", "button"], href=True):
+            href = a.get("href", "").strip()
+            text = a.get_text().lower()
+            
+            # Check href and text for keywords
+            if any(k in href.lower() for k in keywords) or any(k in text for k in keywords):
                 submit_url = urljoin(current_url, href)
-                logger.info(f"Found submit URL via anchor: {submit_url}")
+                logger.info(f"Found submit URL via keyword match: {submit_url}")
                 return submit_url
 
-        # 3. Regex on HTML
-        # Regex to find http/https URLs, stopping at whitespace or common punctuation
+        # 3. Fallback: Regex on HTML (for JS links or weird structures)
         urls = re.findall(r"https?://[^\s'\"<>]+", html)
         for u in urls:
             u = u.rstrip(".,;!)]}\"'")
-            if "submit" in u.lower():
+            if any(k in u.lower() for k in keywords):
                 submit_url = u
-                logger.info(f"Found submit URL via regex (HTML): {submit_url}")
-                return submit_url
-
-        # 4. Regex on Text (handles split tags)
-        text_content = soup.get_text(separator="")
-        urls = re.findall(r"https?://[^\s'\"<>]+", text_content)
-        for u in urls:
-            u = u.rstrip(".,;!)]}\"'")
-            if "submit" in u.lower():
-                submit_url = u
-                logger.info(f"Found submit URL via regex (Text): {submit_url}")
+                logger.info(f"Found submit URL via regex: {submit_url}")
                 return submit_url
 
         return None

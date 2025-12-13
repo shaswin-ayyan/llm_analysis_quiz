@@ -1,0 +1,12 @@
+<!doctype html>
+<title>project2-tools</title>
+<h1>/project2-tools</h1>
+<p><strong>Difficulty:</strong> 4 (next URL only on correct answer)</p>
+<p><strong>Personalized:</strong> No.</p>
+<ol>
+  <li>Review tool schemas in <a href="/project2/tools.json">/project2/tools.json</a>.</li>
+  <li>Create an ordered plan (JSON array) of tool calls to find the status of issue 42 in repo <code>demo/api</code> and summarize it.</li>
+  <li>Required order: <code>search_docs</code> → <code>fetch_issue</code> → <code>summarize</code>. Include arguments matching the goal (owner=demo, repo=api, id=42, and a summary with <code>max_tokens</code> ≤ 80).</li>
+  <li>Submit the plan JSON as text in <code>answer</code> with <code>url</code> = <code><span class="origin"></span>/project2-tools</code>. Do not run the tools; just send the JSON plan.</li>
+</ol>
+<script type="module">for (const el of document.querySelectorAll('.origin')) el.textContent = window.location.origin;</script>

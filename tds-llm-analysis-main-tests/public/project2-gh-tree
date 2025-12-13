@@ -1,0 +1,12 @@
+<!doctype html>
+<title>project2-gh-tree</title>
+<h1>/project2-gh-tree</h1>
+<p><strong>Difficulty:</strong> 3 (next URL only on correct answer)</p>
+<p><strong>Personalized:</strong> Yes. Add an offset based on your email length.</p>
+<ol>
+  <li>Use the GitHub API: <code>GET /repos/{owner}/{repo}/git/trees/{sha}?recursive=1</code> with params in <a href="/project2/gh-tree.json">/project2/gh-tree.json</a>.</li>
+  <li>Count how many <code>.md</code> files are under <code>pathPrefix</code>.</li>
+  <li>Compute <code>offset = (length of your email) mod 2</code>. Final answer = count + offset.</li>
+  <li>Submit that integer as <code>answer</code> with <code>url</code> = <code><span class="origin"></span>/project2-gh-tree</code>. Send the number only.</li>
+</ol>
+<script type="module">for (const el of document.querySelectorAll('.origin')) el.textContent = window.location.origin;</script>

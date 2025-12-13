@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<meta charset="utf-8">
+<title>Demo2 Alphametic</title>
+<canvas id="puzzle" width="1000" height="360" aria-label="Alphametic puzzle"></canvas>
+<noscript>Add ?email=... and enable JavaScript to see the puzzle.</noscript>
+<script type="module">
+import { demo2Key, emailNumber, getEmail } from "./utils.js";
+
+const canvas = document.querySelector("#puzzle");
+const ctx = canvas.getContext("2d");
+ctx.font = "18px monospace";
+ctx.fillStyle = "#0a0a0a";
+
+const email = getEmail();
+if (!email) {
+  ctx.fillText("Add ?email=you@example.com to the URL to get your personalized puzzle.", 20, 50);
+  throw new Error("No email provided");
+}
+
+const number = await emailNumber(email);
+const key = await demo2Key(email);
+const letters = ["F", "O", "R", "K", "L", "I", "M", "E"];
+const digits = key.split("");
+const mapping = Object.fromEntries(letters.map((letter, i) => [letter, digits[i]]));
+
+const left = Number(mapping.F + mapping.O + mapping.R + mapping.K);
+const right = Number(mapping.L + mapping.I + mapping.M + mapping.E);
+const sum = left + right;
+
+const lines = [
+  "ALPHAMETIC CHALLENGE (rendered on canvas)",
+  "",
+  `  F O R K (${left})`,
+  `+ L I M E (${right})`,
+  "------------",
+  `  ${sum}`,
+  "",
+  "Digits can repeat. The letters F,O,R,K,L,I,M,E hide your 8-digit key.",
+  "Clue: emailNumber(email) = first 4 hex of SHA1(email) as an integer.",
+  "Key = ((emailNumber * 7919 + 12345) mod 1e8).",
+  "Write that key as digits F O R K L I M E (in that order).",
+  "Submit the key as your /submit answer with url=/demo2, then tackle /demo2-checksum.",
+];
+
+lines.forEach((line, i) => ctx.fillText(line, 20, 40 + i * 26));
+
+console.log({ email, emailNumber: number, key, mapping, left, right, sum });
+</script>

@@ -27,15 +27,33 @@ class Settings(BaseSettings):
     # AI Pipe Proxy (Optional/Legacy)
     AIPIPE_PROXY_URL: str = "https://aipipe.org/proxy"
 
-    LLM_CHAT_MODEL: str = "google/gemma-3-27b-it"
+    # ------------------------
+    # AIPIPE SWITCH
+    # ------------------------
+    USE_AIPIPE: bool = True
+    AIPIPE_API_KEY: str | None = None
+    AIPIPE_BASE_URL: str = "https://aipipe.org/openrouter/v1"
+
+    # ------------------------
+    # SYSTEM UPGRADE CONFIG
+    # ------------------------
+    E2B_API_KEY: str | None = None
+    LANGSMITH_API_KEY: str | None = None
+    
+    # Router Models
+    MODEL_PRIMARY: str = "deepseek/deepseek-chat-v3-0324"
+    MODEL_FALLBACK: str = "deepseek/deepseek-chat-v3-0324"
+    MODEL_EXPENSIVE: str = "google/gemini-2.0-flash-001"
+
+    LLM_CHAT_MODEL: str = MODEL_PRIMARY
     
     # Model Constants
     # Tier 1: Orchestrator (Speed & Multimodal)
-    ORCHESTRATOR_MODEL: str = "google/gemma-3-27b-it"
+    ORCHESTRATOR_MODEL: str = MODEL_PRIMARY
     # Tier 2: Worker (Deep Analysis)
-    WORKER_MODEL: str = "alibaba/tongyi-deepresearch-30b-a3b"
+    WORKER_MODEL: str = MODEL_FALLBACK
     # Audio Transcription
-    AUDIO_MODEL: str = "google/gemini-2.0-flash-lite-preview-02-05"
+    AUDIO_MODEL: str = "google/gemini-2.0-flash-lite-001"
 
     LOG_LEVEL: str = "INFO"
 
