@@ -164,10 +164,21 @@ When the instruction contains a logical rule or formula:
    **IF** the task involves analyzing a ZIP file (e.g., "logs.zip", "extract and count"):
    1.  **UNZIP FIRST:** Use `zipfile` to extract the archive to a temporary folder (e.g., `extracted_logs`).
    2.  **LIST FILES:** Use `os.walk` or `glob` to find all relevant files (e.g., `*.log`, `*.jsonl`) in the extracted folder.
-   3.  **ITERATE & PARSE:** Loop through EACH file, read line by line, and perform the required calculation (sum, count, etc.).
-   4.  **DEBUG:** Print the number of files found and the total count to stdout for verification.
-   5.  **CRITICAL:** DO NOT print the file content to stdout. Only print the summary/count. Printing large files will crash the system.
-   6.  **FINAL ANSWER:** Print the final result clearly.
+   3.  **ITERATE & PARSE:** 
+       - **CRITICAL**: Loop through EVERY SINGLE LINE in the log file
+       - For each line, parse the JSON and check the filter condition
+       - Use a counter variable to count matches
+   4.  **EXAMPLE CODE:**
+       ```python
+       import json
+       count = 0
+       for line in open('logs.jsonl'):
+           entry = json.loads(line.strip())
+           if entry.get('status') == 'pending':  # Your filter
+               count += 1
+       print(count)  # Print ONLY the count
+       ```
+   5.  **CRITICAL:** DO NOT print the file content to stdout. Only print the summary/count.
 
    ### RULE: DIRTY CSV HANDLING
    **IF** the task involves a CSV file (e.g., "messy.csv", "data.csv"):
@@ -175,6 +186,11 @@ When the instruction contains a logical rule or formula:
    2.  **HANDLE HEADERS:** If headers are missing or messy, use `header=None` or strip whitespace/quotes from column names (`df.columns = df.columns.str.strip()`).
    3.  **HANDLE DATES:** Use `pd.to_datetime(df['col'], errors='coerce')` to handle mixed formats.
    4.  **HANDLE NUMBERS:** Use `pd.to_numeric(df['col'], errors='coerce')` to handle non-numeric characters.
+   5.  **OUTPUT JSON ARRAYS:** When outputting JSON:
+       - **CRITICAL**: Print the COMPLETE array with ALL rows, not just first row!
+       - Use `print(df.to_json(orient='records'))` for all rows
+       - WRONG: `print(json.dumps(results[0]))` ❌ Only 1 row
+       - CORRECT: `print(json.dumps(results))` ✅ All rows
    5.  **CONVERT TO JSON:** When outputting JSON arrays:
       - Use `df.to_json(orient='records')` OR
       - Use `json.dumps(df.to_dict('records'))` for pretty formatting

@@ -190,7 +190,7 @@ class BrowserManager:
 
     async def find_task_image_url(self, page_url: str) -> str:
         """
-        Actively hunts for the task image using Playwright locators.
+        Actively hunts for the task image or PDF document using Playwright locators.
         """
         async with async_playwright() as p:
             browser = await p.chromium.launch(headless=True, args=["--no-sandbox"])
@@ -198,24 +198,37 @@ class BrowserManager:
             try:
                 await page.goto(page_url, wait_until="networkidle", timeout=60000)
                 
-                # STRATEGY 1: Look for Anchors linking to Images
+                # STRATEGY 1: Look for PDFs first (invoices, documents)
+                try:
+                    pdf_link = await page.locator('a[href$=".pdf"]').first.get_attribute('href', timeout=5000)
+                    if pdf_link:
+                        full_url = urljoin(page_url, pdf_link)
+                        logger.info(f"Found PDF document: {full_url}")
+                        return full_url
+                except:
+                    pass
+                
+                # STRATEGY 2: Look for Anchors linking to Images
                 # Matches <a href="/project2/heatmap.png">
-                # We use regex for extensions
-                image_link = await page.locator('a[href$=".png"], a[href$=".jpg"], a[href$=".jpeg"]').first.get_attribute('href')
-                
-                if image_link:
-                    full_url = urljoin(page_url, image_link)
-                    logger.info(f"Found image via anchor: {full_url}")
-                    return full_url
+                try:
+                    image_link = await page.locator('a[href$=".png"], a[href$=".jpg"], a[href$=".jpeg"]').first.get_attribute('href', timeout=5000)
+                    if image_link:
+                        full_url = urljoin(page_url, image_link)
+                        logger.info(f"Found image via anchor: {full_url}")
+                        return full_url
+                except:
+                    pass
 
-                # STRATEGY 2: Look for Image Tags directly
+                # STRATEGY 3: Look for Image Tags directly
                 # Matches <img src="...">
-                img_src = await page.locator('img[src$=".png"], img[src$=".jpg"]').first.get_attribute('src')
-                
-                if img_src:
-                    full_url = urljoin(page_url, img_src)
-                    logger.info(f"Found image via img tag: {full_url}")
-                    return full_url
+                try:
+                    img_src = await page.locator('img[src$=".png"], img[src$=".jpg"]').first.get_attribute('src', timeout=5000)
+                    if img_src:
+                        full_url = urljoin(page_url, img_src)
+                        logger.info(f"Found image via img tag: {full_url}")
+                        return full_url
+                except:
+                    pass
                     
                 # STRATEGY 3 (Fallback): Screenshot
                 # We return a special URI scheme "screenshot://path" or just path?
